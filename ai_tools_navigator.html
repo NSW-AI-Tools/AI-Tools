@@ -1,0 +1,3164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Tools for Teachers</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Fallback fonts if Google Fonts blocked by school network */
+:root {
+  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  --font-mono: 'DM Mono', 'Consolas', 'Courier New', monospace;
+}
+body { font-family: var(--font-sans); }
+.prompt-box, .ws-prompt-text { font-family: var(--font-mono); }
+</style>
+<style>
+:root {
+  --navy: #002060;
+  --navy-mid: #002f8a;
+  --navy-light: #E8EDF8;
+  --gold: #FFD966;
+  --gold-dark: #B8963E;
+  --bg: #F4F6FA;
+  --surface: #ffffff;
+  --border: rgba(0,32,96,0.12);
+  --text: #0f1a2e;
+  --text-2: #4a5568;
+  --text-3: #7a8698;
+  --green-bg: #EAF7EF;
+  --green-text: #1a6b3a;
+  --green-border: #6FCF97;
+  --amber-bg: #FFF8E7;
+  --amber-text: #7d4e00;
+  --amber-border: #F6C842;
+  --red-bg: #FFF0F0;
+  --red-text: #8B1A1A;
+  --ms-bg: #EAF3FB;
+  --ms-text: #0c4a8a;
+  --ms-border: #4A90D9;
+  --free-bg: #EAF7EF;
+  --free-text: #1a6b3a;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 2px 12px rgba(0,32,96,0.08);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+.site-header {
+  background: var(--navy);
+  padding: 1.1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  border-bottom: 3px solid var(--gold);
+}
+.header-left { display: flex; align-items: center; gap: 14px; }
+.logo {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: var(--gold); display: flex; align-items: center;
+  justify-content: center; font-size: 17px; font-weight: 600;
+  color: var(--navy); flex-shrink: 0;
+}
+.header-title { color: white; font-size: 17px; font-weight: 600; line-height: 1.2; }
+.header-sub { color: rgba(255,255,255,0.55); font-size: 12px; margin-top: 2px; }
+.header-nav { display: flex; gap: 4px; }
+.header-nav button {
+  background: transparent; border: none;
+  color: rgba(255,255,255,0.65);
+  font-family: 'DM Sans', sans-serif; font-size: 13px;
+  padding: 6px 14px; border-radius: var(--radius-sm);
+  cursor: pointer; transition: background 0.15s, color 0.15s;
+}
+.header-nav button:hover,
+.header-nav button.active { background: rgba(255,255,255,0.12); color: white; }
+
+/* ── PAGES ── */
+.page { display: none; }
+.page.visible { display: block; }
+
+.container { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 6rem; scroll-margin-top: 70px; }
+
+/* ── STEP PANELS ── */
+/* Each step is a "panel" that starts hidden and slides in */
+.step-panel {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+  pointer-events: none;
+  scroll-margin-top: 80px;
+  /* stays in flow so page height is correct after reveal */
+}
+.step-panel.revealed {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* connector between steps */
+.step-connector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 1.5rem 0 0.25rem;
+  opacity: 0;
+  transition: opacity 0.3s ease 0.2s;
+}
+.step-connector.revealed { opacity: 1; }
+.connector-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.connector-dot {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--navy); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; flex-shrink: 0;
+}
+
+/* ── WELCOME CARD ── */
+.welcome-card {
+  background: var(--navy);
+  border-radius: var(--radius);
+  padding: 1.75rem 2rem;
+  margin-bottom: 2.5rem;
+  display: flex; gap: 1.25rem; align-items: flex-start;
+}
+.welcome-icon { font-size: 36px; flex-shrink: 0; margin-top: 2px; }
+.welcome-card h2 { color: white; font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+.welcome-card p { color: rgba(255,255,255,0.72); font-size: 14px; line-height: 1.7; }
+
+/* ── SECTION LABEL ── */
+.section-q {
+  font-size: 21px; font-weight: 600; color: var(--navy);
+  margin-bottom: 5px; line-height: 1.3;
+}
+.section-hint {
+  font-size: 14px; color: var(--text-2);
+  margin-bottom: 1.5rem; line-height: 1.6;
+}
+
+/* ── CHOICE BUTTON GRIDS ── */
+.btn-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 0; }
+.btn-grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 0; }
+.btn-grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 0; }
+
+.choice-btn {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  font-family: 'DM Sans', sans-serif;
+}
+.choice-btn:hover {
+  border-color: var(--navy);
+  background: var(--navy-light);
+  box-shadow: 0 0 0 3px rgba(0,32,96,0.07);
+}
+.choice-btn.selected {
+  border-color: var(--navy);
+  background: var(--navy-light);
+  border-width: 2px;
+  box-shadow: 0 0 0 3px rgba(0,32,96,0.1);
+}
+.choice-btn .btn-icon { font-size: 28px; }
+.choice-btn .btn-label { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.choice-btn .btn-sub { font-size: 12px; color: var(--text-2); line-height: 1.5; }
+
+/* who buttons — horizontal */
+.choice-btn.who-btn {
+  flex-direction: row; text-align: left; gap: 14px;
+  padding: 1.25rem 1.4rem;
+}
+.choice-btn.who-btn .btn-icon { font-size: 30px; flex-shrink: 0; }
+.choice-btn.who-btn .btn-label { font-size: 15px; }
+
+/* ── BANNERS ── */
+.banner {
+  display: flex; align-items: flex-start; gap: 12px;
+  border-radius: var(--radius); padding: 1rem 1.25rem;
+  margin-top: 1rem;
+  border-width: 1px; border-style: solid;
+}
+.banner-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+.banner-body { font-size: 13px; line-height: 1.65; }
+.banner-body strong { font-weight: 600; }
+.banner.green { background: var(--green-bg); border-color: var(--green-border); color: var(--green-text); }
+.banner.amber { background: var(--amber-bg); border-color: var(--amber-border); color: var(--amber-text); }
+.banner.navy { background: var(--navy-light); border-color: rgba(0,32,96,0.25); color: var(--navy); }
+#studentWarnBanner { display: none; }
+#studentWarnBanner.show { display: flex; }
+
+/* ── TOOL CARDS ── */
+.tool-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.4rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow);
+}
+.tool-card-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+.tool-logo-box {
+  width: 40px; height: 40px; border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 19px; flex-shrink: 0;
+}
+.tool-logo-box.ms { background: var(--ms-bg); }
+.tool-logo-box.free { background: var(--free-bg); }
+.tool-name-row { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin-bottom: 3px; }
+.tool-name { font-size: 16px; font-weight: 600; color: var(--text); }
+.badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 3px 9px; border-radius: 99px;
+  font-size: 11px; font-weight: 600; border: 1px solid transparent;
+}
+.badge.ms { background: var(--ms-bg); color: var(--ms-text); border-color: var(--ms-border); }
+.badge.free { background: var(--free-bg); color: var(--free-text); border-color: var(--green-border); }
+.badge.account { background: var(--amber-bg); color: var(--amber-text); border-color: var(--amber-border); }
+.badge.no-account { background: var(--green-bg); color: var(--green-text); border-color: var(--green-border); }
+.tool-tagline { font-size: 12px; color: var(--text-3); }
+.privacy-note { font-size: 12px; color: var(--text-3); margin-bottom: 10px; }
+.tool-desc { font-size: 13px; color: var(--text-2); line-height: 1.65; margin-bottom: 12px; }
+.prompt-label {
+  font-size: 11px; font-weight: 600; color: var(--text-2);
+  text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;
+}
+.prompt-box {
+  background: #F0F4FF;
+  border: 1px solid rgba(0,32,96,0.15);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.1rem;
+  font-family: 'DM Mono', monospace; font-size: 13px;
+  color: var(--text); line-height: 1.75; margin-bottom: 8px;
+  white-space: pre-wrap; word-break: break-word;
+}
+.copy-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--navy); color: white; border: none;
+  border-radius: var(--radius-sm); padding: 7px 16px;
+  font-size: 13px; font-weight: 600;
+  font-family: 'DM Sans', sans-serif; cursor: pointer;
+  transition: background 0.15s;
+}
+.copy-btn:hover { background: var(--navy-mid); }
+.copy-btn.copied { background: var(--green-text); }
+
+/* ── STEP GUIDE ── */
+.step-guide { margin-top: 1.2rem; }
+.step-guide-title {
+  font-size: 13px; font-weight: 600; color: var(--text);
+  margin-bottom: 8px;
+}
+.steps-list { list-style: none; padding: 0; }
+.steps-list li {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 9px 0; border-bottom: 1px solid var(--border);
+  font-size: 13px; color: var(--text-2); line-height: 1.6;
+}
+.steps-list li:last-child { border-bottom: none; }
+.step-circle {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--navy); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; flex-shrink: 0; margin-top: 2px;
+}
+
+/* ── RESULT HEADER ── */
+.result-header {
+  background: var(--navy);
+  border-radius: var(--radius);
+  padding: 1.4rem 1.75rem;
+  margin-bottom: 1.25rem;
+  display: flex; align-items: center; gap: 14px;
+}
+.result-header .rh-icon { font-size: 30px; }
+.result-header h2 { color: white; font-size: 18px; font-weight: 600; margin-bottom: 3px; }
+.result-header p { color: rgba(255,255,255,0.68); font-size: 13px; }
+
+/* ── CRUMB ── */
+.crumb {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text-3); margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+.crumb span { cursor: pointer; }
+.crumb span:hover { color: var(--navy); text-decoration: underline; }
+.crumb .sep { color: var(--border); cursor: default; }
+.crumb .current { color: var(--text-2); cursor: default; font-weight: 500; }
+
+/* ── START AGAIN ── */
+.restart-row { display: flex; gap: 10px; margin-top: 1.75rem; flex-wrap: wrap; }
+.action-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--navy); color: white; border: none;
+  border-radius: var(--radius-sm); padding: 0.75rem 1.6rem;
+  font-size: 14px; font-weight: 600;
+  font-family: 'DM Sans', sans-serif; cursor: pointer;
+  transition: background 0.15s;
+}
+.action-btn:hover { background: var(--navy-mid); }
+.back-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: transparent; border: 1.5px solid var(--border);
+  color: var(--text-2); border-radius: var(--radius-sm);
+  padding: 0.65rem 1.2rem; font-size: 13px; font-weight: 500;
+  font-family: 'DM Sans', sans-serif; cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.back-btn:hover { border-color: var(--navy); color: var(--navy); }
+
+/* ── SAFE / FAQ PAGES ── */
+.tip-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.1rem 1.25rem;
+  margin-bottom: 0.75rem;
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.tip-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--navy); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600; flex-shrink: 0;
+}
+.tip-body h4 { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.tip-body p { font-size: 13px; color: var(--text-2); line-height: 1.65; }
+
+/* ── FOOTER ── */
+.site-footer {
+  background: #001540; padding: 1rem 2rem;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.site-footer p { font-size: 12px; color: rgba(255,255,255,0.38); }
+
+/* ── SCROLL PROGRESS INDICATOR ── */
+.scroll-indicator {
+  position: fixed;
+  left: 0; top: 3px; /* sits just below the gold border */
+  height: 3px;
+  background: var(--gold);
+  width: 0%;
+  z-index: 200;
+  transition: width 0.1s linear;
+  border-radius: 0 2px 2px 0;
+  pointer-events: none;
+}
+
+/* ── FULL LESSON PACK ── */
+.pack-section {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow);
+}
+.pack-section-header {
+  background: var(--navy);
+  padding: 0.85rem 1.25rem;
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none;
+}
+.pack-section-header-left {
+  display: flex; align-items: center; gap: 10px;
+}
+.pack-section-num {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--gold); color: var(--navy);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; flex-shrink: 0;
+}
+.pack-section-title { color: white; font-size: 14px; font-weight: 600; }
+.pack-section-tool  { color: rgba(255,255,255,0.6); font-size: 12px; }
+.pack-chevron { color: var(--gold); font-size: 16px; transition: transform 0.25s ease; }
+.pack-chevron.open { transform: rotate(180deg); }
+.pack-section-body {
+  background: var(--surface);
+  padding: 1.1rem 1.25rem;
+  border-top: 1px solid var(--border);
+  display: none;
+}
+.pack-section-body.open { display: block; }
+.pack-tool-row {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 10px; flex-wrap: wrap;
+}
+.pack-tool-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 600;
+}
+.pack-tool-badge.ms   { background: var(--ms-bg); color: var(--ms-text); border: 1px solid var(--ms-border); }
+.pack-tool-badge.free { background: var(--free-bg); color: var(--free-text); border: 1px solid var(--green-border); }
+.pack-open-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--gold); color: var(--navy);
+  text-decoration: none; border-radius: 6px;
+  padding: 4px 12px; font-size: 12px; font-weight: 700;
+  transition: background 0.15s;
+}
+.pack-open-btn:hover { background: #f0c832; }
+.pack-prompt-label { font-size: 11px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; }
+.pack-prompt-text {
+  background: #F0F4FF; border: 1px solid rgba(0,32,96,0.12);
+  border-radius: var(--radius-sm); padding: 0.85rem 1rem;
+  font-family: var(--font-mono, monospace); font-size: 12.5px;
+  color: var(--text); line-height: 1.75;
+  white-space: pre-wrap; word-break: break-word;
+  margin-bottom: 7px;
+}
+.pack-copy-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--navy); color: white; border: none;
+  border-radius: 6px; padding: 6px 14px;
+  font-size: 12px; font-weight: 600;
+  font-family: var(--font-sans, sans-serif); cursor: pointer;
+  transition: background 0.15s;
+}
+.pack-copy-btn:hover { background: var(--navy-mid); }
+.pack-copy-btn.copied { background: var(--green-text); }
+.pack-copy-all-row {
+  background: var(--navy-light); border: 1px solid rgba(0,32,96,0.15);
+  border-radius: var(--radius); padding: 1rem 1.25rem;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px; margin-bottom: 1rem;
+}
+.pack-copy-all-row p { font-size: 13px; color: var(--navy); font-weight: 500; }
+.pack-copy-all-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--gold); color: var(--navy); border: none;
+  border-radius: var(--radius-sm); padding: 8px 18px;
+  font-size: 13px; font-weight: 700;
+  font-family: var(--font-sans, sans-serif); cursor: pointer;
+  transition: background 0.15s;
+}
+.pack-copy-all-btn:hover { background: #f0c832; }
+.pack-save-banner {
+  background: var(--green-bg); border: 1px solid var(--green-border);
+  border-radius: var(--radius); padding: 1rem 1.25rem;
+  display: flex; align-items: flex-start; gap: 10px;
+  margin-top: 1rem;
+}
+.pack-save-banner p { font-size: 13px; color: var(--green-text); line-height: 1.65; }
+.pack-save-ws-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--green-text); color: white; border: none;
+  border-radius: var(--radius-sm); padding: 7px 16px;
+  font-size: 13px; font-weight: 600;
+  font-family: var(--font-sans, sans-serif); cursor: pointer;
+  white-space: nowrap; margin-top: 6px;
+  transition: opacity 0.15s;
+}
+.pack-save-ws-btn:hover { opacity: 0.85; }
+
+/* ── SINGLE TOOL TOGGLE ── */
+.pack-mode-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow);
+}
+.pack-mode-bar-title {
+  font-size: 14px; font-weight: 600; color: var(--text);
+  margin-bottom: 10px; display: flex; align-items: center; gap: 7px;
+}
+.pack-mode-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 8px;
+}
+.pack-mode-btn {
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); padding: 0.75rem 1rem;
+  cursor: pointer; font-family: var(--font-sans, sans-serif);
+  display: flex; flex-direction: column; gap: 3px;
+  text-align: left; transition: border-color 0.15s, background 0.15s;
+}
+.pack-mode-btn:hover { border-color: var(--navy); background: var(--navy-light); }
+.pack-mode-btn.active { border-color: var(--navy); background: var(--navy-light); border-width: 2px; }
+.pack-mode-btn.active-gold { border-color: var(--gold); background: #fffbe6; border-width: 2px; }
+.pack-mode-btn-top { display: flex; align-items: center; gap: 7px; }
+.pack-mode-icon { font-size: 18px; }
+.pack-mode-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.pack-mode-note { font-size: 11px; color: var(--text-3); padding-left: 25px; }
+.pack-mode-badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 7px; border-radius: 99px;
+  font-size: 10px; font-weight: 600; margin-left: auto;
+}
+.pack-mode-badge.rec { background: var(--gold); color: var(--navy); }
+.pack-mode-badge.school { background: var(--ms-bg); color: var(--ms-text); border: 1px solid var(--ms-border); }
+.pack-mode-badge.free { background: var(--free-bg); color: var(--free-text); border: 1px solid var(--green-border); }
+.pack-single-master {
+  background: #002060;
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+.pack-single-master-title {
+  color: var(--gold); font-size: 13px; font-weight: 600;
+  margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+}
+.pack-single-master p {
+  color: rgba(255,255,255,0.75); font-size: 12.5px; line-height: 1.6;
+  margin-bottom: 8px;
+}
+.pack-single-open-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--gold); color: var(--navy);
+  text-decoration: none; border-radius: 6px;
+  padding: 6px 16px; font-size: 13px; font-weight: 700;
+  transition: background 0.15s; margin-right: 8px;
+}
+.pack-single-open-btn:hover { background: #f0c832; }
+
+/* ── WORKSPACE FULL PACK SECTION ── */
+.ws-pack-card {
+  background: var(--surface); border: 2px solid var(--gold);
+  border-radius: var(--radius); padding: 1.25rem 1.4rem;
+  margin-bottom: 1.25rem; box-shadow: var(--shadow);
+}
+.ws-pack-title {
+  font-size: 16px; font-weight: 600; color: var(--navy);
+  margin-bottom: 4px; display: flex; align-items: center; gap: 8px;
+}
+.ws-pack-sub { font-size: 13px; color: var(--text-2); margin-bottom: 1rem; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 640px) {
+  .btn-grid-3, .btn-grid-4 { grid-template-columns: repeat(2,1fr); }
+  .btn-grid-2 { grid-template-columns: 1fr; }
+  .header-nav { display: none; }
+  .container { padding: 1.25rem 1rem 4rem; }
+  .site-header { padding: 1rem 1.25rem; }
+}
+
+/* ── DISCLAIMER POPUP ── */
+.popup-overlay {
+  display: block;
+  width: 100%;
+  background: rgba(0,32,96,0.06);
+  padding: 1.5rem;
+  border-bottom: 3px solid var(--gold);
+}
+.popup-card {
+  background: white;
+  border-radius: 16px;
+  max-width: 620px;
+  margin: 0 auto;
+  box-shadow: 0 8px 32px rgba(0,32,96,0.14);
+  overflow: hidden;
+  animation: slideUpCard 0.35s ease;
+}
+@keyframes slideUpCard {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.popup-header {
+  background: #002060;
+  padding: 1.5rem 1.75rem 1.25rem;
+  display: flex; align-items: flex-start; gap: 14px;
+}
+.popup-header-icon {
+  font-size: 36px; flex-shrink: 0; margin-top: 2px;
+}
+.popup-header h2 {
+  color: white; font-size: 19px; font-weight: 600;
+  line-height: 1.3; margin-bottom: 4px;
+}
+.popup-header p {
+  color: rgba(255,255,255,0.65); font-size: 13px; line-height: 1.5;
+}
+.popup-body {
+  padding: 1.5rem 1.75rem;
+}
+.popup-point {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid rgba(0,32,96,0.08);
+  font-size: 14px; color: #2d3748; line-height: 1.65;
+}
+.popup-point:last-of-type { border-bottom: none; }
+.popup-point-icon {
+  font-size: 20px; flex-shrink: 0; margin-top: 1px;
+}
+.popup-point strong { font-weight: 600; color: #002060; }
+.popup-footer {
+  padding: 1rem 1.75rem 1.5rem;
+  display: flex; flex-direction: column; align-items: stretch; gap: 10px;
+}
+.popup-checkbox-row {
+  display: flex; align-items: center; gap: 10px;
+  background: #F4F6FA; border-radius: 10px;
+  padding: 0.85rem 1rem; cursor: pointer;
+  border: 1.5px solid rgba(0,32,96,0.12);
+  transition: border-color 0.15s;
+  font-size: 14px; font-weight: 500; color: #002060;
+  user-select: none;
+}
+.popup-checkbox-row:hover { border-color: #002060; }
+.popup-checkbox-row input[type=checkbox] {
+  width: 18px; height: 18px; accent-color: #002060;
+  cursor: pointer; flex-shrink: 0;
+}
+.popup-confirm-btn {
+  width: 100%; padding: 0.85rem;
+  background: #002060; color: white;
+  border: none; border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.popup-confirm-btn:disabled {
+  opacity: 0.35; cursor: default;
+}
+.popup-confirm-btn:not(:disabled):hover { background: #002f8a; }
+.popup-gold-bar {
+  height: 4px; background: #FFD966;
+}
+
+
+/* ══════════════════════════════════════════
+   LESSON WORKSPACE
+══════════════════════════════════════════ */
+
+/* ── WORKSPACE NAV TAB ── */
+#navWorkspace { position: relative; }
+.ws-badge {
+  position: absolute; top: 2px; right: 4px;
+  background: var(--gold); color: var(--navy);
+  font-size: 10px; font-weight: 700;
+  padding: 1px 5px; border-radius: 99px;
+  line-height: 1.4;
+}
+
+/* ── PAGE LAYOUT ── */
+.ws-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+@media (max-width: 760px) {
+  .ws-layout { grid-template-columns: 1fr; }
+}
+
+/* ── SIDEBAR ── */
+.ws-sidebar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  position: sticky; top: 80px;
+}
+.ws-sidebar-header {
+  background: var(--navy);
+  padding: 1rem 1.1rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.ws-sidebar-header h3 { color: white; font-size: 14px; font-weight: 600; }
+.ws-sidebar-header span { color: rgba(255,255,255,0.55); font-size: 12px; }
+.ws-lesson-list { padding: 0.5rem 0; }
+.ws-lesson-item {
+  padding: 0.75rem 1.1rem;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+  display: flex; align-items: flex-start; gap: 8px;
+}
+.ws-lesson-item:last-child { border-bottom: none; }
+.ws-lesson-item:hover { background: var(--navy-light); }
+.ws-lesson-item.active { background: var(--navy-light); border-left: 3px solid var(--navy); }
+.ws-lesson-item-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.ws-lesson-item-title { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.ws-lesson-item-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+.ws-lesson-item-del {
+  margin-left: auto; flex-shrink: 0;
+  background: none; border: none; cursor: pointer;
+  color: var(--text-3); font-size: 14px; padding: 2px 4px;
+  border-radius: 4px; transition: color 0.15s, background 0.15s;
+  line-height: 1;
+}
+.ws-lesson-item-del:hover { color: var(--red-text, #8B1A1A); background: var(--red-bg, #FFF0F0); }
+.ws-empty {
+  padding: 1.5rem 1.1rem;
+  font-size: 13px; color: var(--text-3);
+  text-align: center; line-height: 1.6;
+}
+.ws-new-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  margin: 0.75rem; padding: 0.65rem;
+  background: var(--navy-light); border: 1.5px dashed rgba(0,32,96,0.25);
+  border-radius: var(--radius-sm); color: var(--navy);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: background 0.15s, border-color 0.15s;
+}
+.ws-new-btn:hover { background: #d4ddf5; border-color: var(--navy); }
+.ws-capacity-bar {
+  margin: 0 0.75rem 0.75rem;
+  background: var(--bg); border-radius: 99px; height: 6px; overflow: hidden;
+}
+.ws-capacity-fill {
+  height: 100%; background: var(--navy); border-radius: 99px;
+  transition: width 0.3s ease;
+}
+.ws-capacity-label {
+  font-size: 11px; color: var(--text-3);
+  text-align: center; margin: 0 0.75rem 0.75rem;
+}
+
+/* ── MAIN CONTENT ── */
+.ws-main { min-width: 0; }
+
+.ws-welcome {
+  background: var(--navy); border-radius: var(--radius);
+  padding: 1.5rem 1.75rem; margin-bottom: 1.5rem;
+  display: flex; gap: 1.1rem; align-items: flex-start;
+}
+.ws-welcome-icon { font-size: 32px; flex-shrink: 0; }
+.ws-welcome h2 { color: white; font-size: 19px; font-weight: 600; margin-bottom: 4px; }
+.ws-welcome p { color: rgba(255,255,255,0.7); font-size: 13px; line-height: 1.65; }
+
+.ws-storage-note {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: var(--navy-light); border: 1px solid rgba(0,32,96,0.2);
+  border-radius: var(--radius-sm); padding: 0.8rem 1rem;
+  font-size: 12px; color: var(--navy); line-height: 1.6;
+  margin-bottom: 1.25rem;
+}
+
+/* ── FORM ── */
+.ws-form-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.4rem 1.5rem;
+  margin-bottom: 1.25rem; box-shadow: var(--shadow);
+}
+.ws-form-title {
+  font-size: 16px; font-weight: 600; color: var(--navy);
+  margin-bottom: 1.1rem; display: flex; align-items: center; gap: 8px;
+}
+.ws-field { margin-bottom: 1rem; }
+.ws-field:last-child { margin-bottom: 0; }
+.ws-label {
+  display: block; font-size: 13px; font-weight: 600;
+  color: var(--text); margin-bottom: 5px;
+}
+.ws-label-hint { font-weight: 400; color: var(--text-3); font-size: 12px; margin-left: 4px; }
+.ws-input, .ws-select, .ws-textarea {
+  width: 100%; padding: 0.65rem 0.85rem;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text);
+  background: white; transition: border-color 0.15s;
+  outline: none;
+}
+.ws-input:focus, .ws-select:focus, .ws-textarea:focus {
+  border-color: var(--navy); box-shadow: 0 0 0 3px rgba(0,32,96,0.08);
+}
+.ws-textarea { resize: vertical; min-height: 70px; line-height: 1.6; }
+.ws-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 540px) { .ws-row-2 { grid-template-columns: 1fr; } }
+
+/* ── CHECKBOX GRID ── */
+.ws-check-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px; margin-top: 4px;
+}
+.ws-check-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0.6rem 0.85rem;
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); cursor: pointer;
+  font-size: 13px; font-weight: 500; color: var(--text);
+  user-select: none; transition: border-color 0.15s, background 0.15s;
+}
+.ws-check-item:hover { border-color: var(--navy); background: var(--navy-light); }
+.ws-check-item input[type=checkbox] {
+  width: 16px; height: 16px; accent-color: var(--navy);
+  cursor: pointer; flex-shrink: 0;
+}
+.ws-check-item.checked { border-color: var(--navy); background: var(--navy-light); }
+
+/* ── SAVE BUTTON ── */
+.ws-save-btn {
+  width: 100%; padding: 0.85rem;
+  background: var(--navy); color: white; border: none;
+  border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: background 0.15s; margin-top: 0.5rem;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.ws-save-btn:hover { background: var(--navy-mid); }
+.ws-save-btn.saved { background: var(--green-text); }
+
+/* ── RESOURCE BUILDER ── */
+.ws-builder-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.4rem 1.5rem;
+  margin-bottom: 1.25rem; box-shadow: var(--shadow);
+}
+.ws-builder-title {
+  font-size: 16px; font-weight: 600; color: var(--navy);
+  margin-bottom: 4px; display: flex; align-items: center; gap: 8px;
+}
+.ws-builder-sub { font-size: 13px; color: var(--text-2); margin-bottom: 1rem; }
+.ws-resource-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px; margin-bottom: 1rem;
+}
+.ws-resource-btn {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--radius); padding: 0.9rem 0.75rem;
+  cursor: pointer; text-align: center;
+  font-family: 'DM Sans', sans-serif;
+  transition: border-color 0.15s, background 0.15s;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.ws-resource-btn:hover { border-color: var(--navy); background: var(--navy-light); }
+.ws-resource-btn.ws-selected { border-color: var(--navy); background: var(--navy-light); border-width: 2px; }
+.ws-resource-btn.ws-built {
+  border-color: var(--green-border); background: var(--green-bg);
+  cursor: default; opacity: 0.7;
+}
+.ws-resource-icon { font-size: 24px; }
+.ws-resource-label { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.ws-resource-status { font-size: 10px; color: var(--green-text); font-weight: 500; }
+.ws-generate-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 0.8rem;
+  background: var(--navy); color: white; border: none;
+  border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  transition: background 0.15s;
+}
+.ws-generate-btn:hover { background: var(--navy-mid); }
+.ws-generate-btn:disabled { opacity: 0.35; cursor: default; pointer-events: none; }
+
+/* ── PROMPT RESULTS ── */
+.ws-prompts-area { margin-top: 1.25rem; }
+.ws-prompts-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 0.85rem; flex-wrap: wrap; gap: 8px;
+}
+.ws-prompts-title { font-size: 15px; font-weight: 600; color: var(--navy); }
+.ws-copy-all-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--gold); color: var(--navy);
+  border: none; border-radius: var(--radius-sm);
+  padding: 7px 16px; font-size: 13px; font-weight: 600;
+  font-family: 'DM Sans', sans-serif; cursor: pointer;
+  transition: background 0.15s;
+}
+.ws-copy-all-btn:hover { background: #f0c832; }
+.ws-prompt-block {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.1rem 1.25rem;
+  margin-bottom: 0.85rem; box-shadow: 0 1px 4px rgba(0,32,96,0.05);
+}
+.ws-prompt-block-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px; flex-wrap: wrap; gap: 6px;
+}
+.ws-prompt-block-label {
+  font-size: 13px; font-weight: 600; color: var(--navy);
+  display: flex; align-items: center; gap: 6px;
+}
+.ws-prompt-tool-badge {
+  font-size: 11px; color: var(--text-3); font-weight: 400;
+}
+.ws-prompt-text {
+  background: #F0F4FF; border: 1px solid rgba(0,32,96,0.12);
+  border-radius: var(--radius-sm); padding: 0.85rem 1rem;
+  font-family: 'DM Mono', monospace; font-size: 12.5px;
+  color: var(--text); line-height: 1.75;
+  white-space: pre-wrap; word-break: break-word;
+  margin-bottom: 6px;
+}
+.ws-copy-one-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--navy); color: white; border: none;
+  border-radius: 6px; padding: 5px 12px;
+  font-size: 12px; font-weight: 600;
+  font-family: 'DM Sans', sans-serif; cursor: pointer;
+  transition: background 0.15s;
+}
+.ws-copy-one-btn:hover { background: var(--navy-mid); }
+.ws-copy-one-btn.copied { background: var(--green-text); }
+
+/* ── CONTEXT PILL (shown on results page) ── */
+.ws-context-pill {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--navy-light); border: 1px solid rgba(0,32,96,0.18);
+  border-radius: var(--radius); padding: 0.85rem 1.25rem;
+  margin-top: 1.25rem; flex-wrap: wrap;
+}
+.ws-context-pill p { font-size: 13px; color: var(--navy); flex: 1; min-width: 180px; }
+.ws-context-pill p strong { font-weight: 600; }
+.ws-continue-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--navy); color: white; border: none;
+  border-radius: var(--radius-sm); padding: 8px 18px;
+  font-size: 13px; font-weight: 600;
+  font-family: 'DM Sans', sans-serif; cursor: pointer;
+  transition: background 0.15s; white-space: nowrap;
+}
+.ws-continue-btn:hover { background: var(--navy-mid); }
+
+</style>
+</head>
+<body>
+
+
+<!-- ══ DISCLAIMER POPUP ══ -->
+<div class="popup-overlay" id="disclaimerPopup">
+  <div class="popup-card">
+    <div class="popup-gold-bar"></div>
+    <div class="popup-header">
+      <div class="popup-header-icon">⚖️</div>
+      <div>
+        <h2>Before you begin — a note for educators</h2>
+        <p>This tool recommends AI assistants and ready-made prompts to help with your teaching work.</p>
+      </div>
+    </div>
+    <div class="popup-body">
+      <div class="popup-point">
+        <div class="popup-point-icon">🎓</div>
+        <div><strong>You are the educator.</strong> AI tools generate drafts — not finished products. Your professional judgment, curriculum knowledge, and understanding of your students must guide every decision.</div>
+      </div>
+      <div class="popup-point">
+        <div class="popup-point-icon">✏️</div>
+        <div><strong>Always review and edit.</strong> AI can make mistakes, misquote syllabus outcomes, or produce content that doesn't suit your class. Read everything carefully before using it with students.</div>
+      </div>
+      <div class="popup-point">
+        <div class="popup-point-icon">📋</div>
+        <div><strong>Verify curriculum alignment.</strong> Check any NESA outcomes or syllabus references against <strong>nesa.nsw.edu.au</strong> before including them in assessments or lesson plans.</div>
+      </div>
+      <div class="popup-point">
+        <div class="popup-point-icon">🔒</div>
+        <div><strong>Protect student privacy.</strong> Never enter student names, IDs, health details, or welfare information into any AI tool. See the <strong>Safe Use Guide</strong> for full rules.</div>
+      </div>
+      <div class="popup-point">
+        <div class="popup-point-icon">🤝</div>
+        <div><strong>AI assists — it doesn't replace you.</strong> The knowledge, care, and relationships you bring to teaching cannot be replicated. Use these tools to save time, not to hand over responsibility.</div>
+      </div>
+    </div>
+    <div class="popup-footer">
+      <label class="popup-checkbox-row" for="disclaimerCheck">
+        <input type="checkbox" id="disclaimerCheck" onchange="toggleConfirmBtn()">
+        <span>I understand — I will review all AI-generated content before using it</span>
+      </label>
+      <button class="popup-confirm-btn" id="disclaimerConfirmBtn" disabled onclick="this.disabled=true; closeDisclaimer();">
+        ✦ &nbsp;Let's get started
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<div id="pageTop"></div>
+<div class="scroll-indicator" id="scrollProg"></div>
+
+<!-- ══ HEADER ══ -->
+<header class="site-header">
+  <div class="header-left">
+    <div class="logo">AI</div>
+    <div>
+      <div class="header-title">AI Tools for Teachers</div>
+      <div class="header-sub">Find the right tool — quickly and safely</div>
+    </div>
+  </div>
+  <nav class="header-nav">
+    <button class="active" id="navFind" onclick="showPage('navigator')">Find a Tool</button>
+    <button id="navSafe" onclick="showPage('safe')">Safe Use Guide</button>
+    <button id="navFAQ" onclick="showPage('faq')">FAQ</button>
+    <button id="navWorkspace" onclick="showPage('workspace'); wsInit();">My Lessons<span class="ws-badge" id="wsSidebarBadge"></span></button>
+  </nav>
+</header>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  PAGE: NAVIGATOR (scrolling flow)           -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="page visible" id="page-navigator">
+  <div class="container">
+
+    <!-- Welcome -->
+    <div class="welcome-card step-panel revealed" id="panelWelcome">
+      <div class="welcome-icon">✦</div>
+      <div>
+        <h2>What would you like to build today?</h2>
+        <p>Answer three quick questions below and we'll recommend the right AI tool — with a ready-made script you can copy and paste straight in. No technical knowledge needed. Just click and scroll.</p>
+      </div>
+    </div>
+
+    <!-- ── STEP 1 ── -->
+    <div class="step-panel revealed" id="panelStep1">
+      <div class="section-q">Step 1 — Who is this for?</div>
+      <div class="section-hint">This helps us show the right tools. Student activities need extra safety checks.</div>
+      <div class="btn-grid-2">
+        <button class="choice-btn who-btn" id="btn-who-teacher" onclick="selectWho('teacher')">
+          <span class="btn-icon">👤</span>
+          <div>
+            <div class="btn-label">Just me (the teacher)</div>
+            <div class="btn-sub">I'm building something for my own planning or teaching resources</div>
+          </div>
+        </button>
+        <button class="choice-btn who-btn" id="btn-who-students" onclick="selectWho('students')">
+          <span class="btn-icon">👥</span>
+          <div>
+            <div class="btn-label">Me and my students</div>
+            <div class="btn-sub">Students will also use AI tools as part of this activity</div>
+          </div>
+        </button>
+      </div>
+      <div id="studentWarnBanner" class="banner amber">
+        <span class="banner-icon">⚠️</span>
+        <div class="banner-body">
+          <strong>Student safety mode on.</strong> We will only recommend tools appropriate for student use. All prompts are written with no student data included. You will also get a step-by-step guide you can hand directly to students.
+        </div>
+      </div>
+    </div>
+
+    <!-- connector 1→2 -->
+    <div class="step-connector" id="conn12">
+      <div class="connector-line"></div>
+      <div class="connector-dot">2</div>
+      <div class="connector-line"></div>
+    </div>
+
+    <!-- ── STEP 2 ── -->
+    <div class="step-panel" id="panelStep2">
+      <div class="section-q">Step 2 — What do you want to build?</div>
+      <div class="section-hint">Choose the option that best matches your task.</div>
+      <div class="btn-grid-3">
+        <button class="choice-btn" id="btn-task-lesson-plan" onclick="selectTask('lesson-plan',this)">
+          <span class="btn-icon">📋</span>
+          <div class="btn-label">Lesson plan</div>
+          <div class="btn-sub">Sequences, objectives, activities</div>
+        </button>
+        <button class="choice-btn" id="btn-task-lesson-slides" onclick="selectTask('lesson-slides',this)">
+          <span class="btn-icon">📊</span>
+          <div class="btn-label">Lesson slides</div>
+          <div class="btn-sub">PowerPoint or Google Slides content</div>
+        </button>
+        <button class="choice-btn" id="btn-task-classroom-resource" onclick="selectTask('classroom-resource',this)">
+          <span class="btn-icon">📄</span>
+          <div class="btn-label">Classroom resource</div>
+          <div class="btn-sub">Worksheets, activities, handouts</div>
+        </button>
+        <button class="choice-btn" id="btn-task-assessment" onclick="selectTask('assessment',this)">
+          <span class="btn-icon">✅</span>
+          <div class="btn-label">Assessment task</div>
+          <div class="btn-sub">Tasks, rubrics, marking guides</div>
+        </button>
+        <button class="choice-btn" id="btn-task-differentiate" onclick="selectTask('differentiate',this)">
+          <span class="btn-icon">🎯</span>
+          <div class="btn-label">Differentiate a lesson</div>
+          <div class="btn-sub">Scaffolds, extensions, adjustments</div>
+        </button>
+        <button class="choice-btn" id="btn-task-canvas" onclick="selectTask('canvas',this)">
+          <span class="btn-icon">🖥️</span>
+          <div class="btn-label">Canvas LMS page</div>
+          <div class="btn-sub">Build and design Canvas pages</div>
+        </button>
+        <button class="choice-btn" id="btn-task-ai-media" onclick="selectTask('ai-media',this)">
+          <span class="btn-icon">🎬</span>
+          <div class="btn-label">AI media</div>
+          <div class="btn-sub">Video, audio, animation, images</div>
+        </button>
+        <button class="choice-btn" id="btn-task-coding" onclick="selectTask('coding',this)">
+          <span class="btn-icon">💻</span>
+          <div class="btn-label">Coding help</div>
+          <div class="btn-sub">Scripts, debugging, code review</div>
+        </button>
+        <button class="choice-btn" id="btn-task-full-pack" onclick="selectTask('full-pack',this)" style="border-color:var(--gold);background:linear-gradient(135deg,#fffbe6 0%,#fff 100%);">
+          <span class="btn-icon">🎒</span>
+          <div class="btn-label" style="color:var(--navy);">Full lesson pack</div>
+          <div class="btn-sub">Plan + slides + worksheet + exit ticket + differentiation + Canvas page — all at once</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- connector 2→3 -->
+    <div class="step-connector" id="conn23">
+      <div class="connector-line"></div>
+      <div class="connector-dot">3</div>
+      <div class="connector-line"></div>
+    </div>
+
+    <!-- ── STEP 3 ── -->
+    <div class="step-panel" id="panelStep3">
+      <div class="section-q">Step 3 — What is your subject area?</div>
+      <div class="section-hint">This tailors the prompts to your NSW curriculum and year group.</div>
+      <div class="btn-grid-4">
+        <button class="choice-btn" id="btn-kla-english" onclick="selectKLA('english','English',this)">
+          <span class="btn-icon">📖</span>
+          <div class="btn-label">English</div>
+        </button>
+        <button class="choice-btn" id="btn-kla-maths" onclick="selectKLA('maths','Mathematics',this)">
+          <span class="btn-icon">📐</span>
+          <div class="btn-label">Mathematics</div>
+        </button>
+        <button class="choice-btn" id="btn-kla-science" onclick="selectKLA('science','Science',this)">
+          <span class="btn-icon">🔬</span>
+          <div class="btn-label">Science</div>
+        </button>
+        <button class="choice-btn" id="btn-kla-hsie" onclick="selectKLA('hsie','HSIE',this)">
+          <span class="btn-icon">🌏</span>
+          <div class="btn-label">HSIE</div>
+          <div class="btn-sub" style="font-size:11px;">History, Geography, Commerce, Legal</div>
+        </button>
+        <button class="choice-btn" id="btn-kla-tech" onclick="selectKLA('tech','Technologies / TAS',this)">
+          <span class="btn-icon">💻</span>
+          <div class="btn-label">Technologies / TAS</div>
+          <div class="btn-sub" style="font-size:11px;">Software Eng, Design, Food Tech</div>
+        </button>
+        <button class="choice-btn" id="btn-kla-pdhpe" onclick="selectKLA('pdhpe','PDHPE',this)">
+          <span class="btn-icon">🏃</span>
+          <div class="btn-label">PDHPE</div>
+        </button>
+        <button class="choice-btn" id="btn-kla-arts" onclick="selectKLA('arts','Creative Arts',this)">
+          <span class="btn-icon">🎨</span>
+          <div class="btn-label">Creative Arts</div>
+          <div class="btn-sub" style="font-size:11px;">Visual Arts, Music, Drama, Dance</div>
+        </button>
+        <button class="choice-btn" id="btn-kla-languages" onclick="selectKLA('languages','Languages',this)">
+          <span class="btn-icon">🗣️</span>
+          <div class="btn-label">Languages</div>
+          <div class="btn-sub" style="font-size:11px;">LOTE</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- connector 3→results -->
+    <div class="step-connector" id="conn34">
+      <div class="connector-line"></div>
+      <div class="connector-dot" style="background:var(--gold);color:var(--navy);">✦</div>
+      <div class="connector-line"></div>
+    </div>
+
+    <!-- ── RESULTS ── -->
+    <div class="step-panel" id="panelResults">
+
+      <div class="crumb">
+        <span onclick="resetFlow()">🏠 Start again</span>
+        <span class="sep">›</span>
+        <span id="crumb-who" onclick="resetToStep(1)">—</span>
+        <span class="sep">›</span>
+        <span id="crumb-task" onclick="resetToStep(2)">—</span>
+        <span class="sep">›</span>
+        <span id="crumb-kla" onclick="resetToStep(3)">—</span>
+        <span class="sep">›</span>
+        <span class="current">Tools &amp; Prompts</span>
+      </div>
+
+      <div class="result-header">
+        <div class="rh-icon">✦</div>
+        <div>
+          <h2 id="resultTitle">Recommended tools</h2>
+          <p id="resultSubtitle">Based on your choices</p>
+        </div>
+      </div>
+
+      <div id="enterpriseBanner"></div>
+      <div id="studentSafetyBanner"></div>
+      <div id="consumerWarnBanner"></div>
+      <div id="toolsContainer"></div>
+
+      <div class="restart-row">
+        <button class="action-btn" onclick="resetFlow()">↩ Start again</button>
+      </div>
+    </div>
+
+  </div><!-- /container -->
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  PAGE: SAFE USE GUIDE                       -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="page" id="page-safe">
+  <div class="container">
+    <div class="welcome-card" style="margin-bottom:1.5rem;">
+      <div class="welcome-icon">🛡️</div>
+      <div>
+        <h2>Safe Use Guide for AI Tools</h2>
+        <p>AI tools can save significant time, but it's important to use them safely — especially where student information is involved. Read this before using any consumer AI tool.</p>
+      </div>
+    </div>
+    <div class="banner green" style="margin-bottom:1.25rem;">
+      <span class="banner-icon">✅</span>
+      <div class="banner-body"><strong>School-approved tools (Microsoft Copilot) are the safest option.</strong> Your data stays inside the school's Microsoft system and is not used to train any AI model. Always use these first where available.</div>
+    </div>
+    <div class="section-q" style="font-size:18px;margin-bottom:1.1rem;">10 rules for safe AI use</div>
+    <div class="tip-card"><div class="tip-num">1</div><div class="tip-body"><h4>Never enter student names or personal details</h4><p>Do not type any student's name, ID, address, health information, welfare notes, or other identifying detail into a consumer AI tool. Use generic descriptions — "a Year 10 student" rather than a name.</p></div></div>
+    <div class="tip-card"><div class="tip-num">2</div><div class="tip-body"><h4>Understand where your data goes</h4><p>Consumer AI tools may save your conversations and use them to improve their models. Assume anything you type in a free consumer tool is potentially stored. If in doubt, don't type it in.</p></div></div>
+    <div class="tip-card"><div class="tip-num">3</div><div class="tip-body"><h4>Use your school Microsoft account for sensitive tasks</h4><p>Microsoft Copilot accessed through your school M365 account operates under the school's enterprise agreement. Data does not leave the school's tenancy and is not used to train AI models.</p></div></div>
+    <div class="tip-card"><div class="tip-num">4</div><div class="tip-body"><h4>Do not use a personal account for school work</h4><p>If you sign into ChatGPT with a personal home account, those prompts are not covered by any school data agreement. Always use a school-specific account, or use Copilot inside Microsoft 365.</p></div></div>
+    <div class="tip-card"><div class="tip-num">5</div><div class="tip-body"><h4>Always review AI-generated content before using it</h4><p>AI tools can make mistakes, invent facts, or produce content that doesn't match the NSW syllabus. Always read and edit what it produces. You are responsible for everything you give to students.</p></div></div>
+    <div class="tip-card"><div class="tip-num">6</div><div class="tip-body"><h4>Do not upload school documents to consumer tools</h4><p>Do not upload student work, assessment tasks, confidential reports, or school documents to consumer AI tools. These files may be stored on the tool's servers.</p></div></div>
+    <div class="tip-card"><div class="tip-num">7</div><div class="tip-body"><h4>Be careful with paid tools</h4><p>If a tool asks for payment, do not sign up using school funds without checking with your Head Teacher or the principal first. Free tiers are recommended unless IT has approved a tool.</p></div></div>
+    <div class="tip-card"><div class="tip-num">8</div><div class="tip-body"><h4>For student activities — check with your Head Teacher first</h4><p>If you plan to have students use AI tools as part of a class activity, discuss it with your Head Teacher before running it. Students under 18 may need parental consent to create accounts on consumer platforms.</p></div></div>
+    <div class="tip-card"><div class="tip-num">9</div><div class="tip-body"><h4>Disclose AI use in assessments</h4><p>If you used AI to help draft an assessment task or resource, note this in your own records. Follow your school's emerging AI academic integrity policy.</p></div></div>
+    <div class="tip-card"><div class="tip-num">10</div><div class="tip-body"><h4>When in doubt, ask IT or your Head Teacher</h4><p>This guide will be updated as school policy develops. If you're not sure whether a tool is approved, contact IT before using it for school work.</p></div></div>
+    <div class="restart-row"><button class="action-btn" onclick="showPage('navigator')">← Back to Find a Tool</button></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  PAGE: FAQ                                  -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="page" id="page-faq">
+  <div class="container">
+    <div class="welcome-card" style="margin-bottom:1.5rem;">
+      <div class="welcome-icon">❓</div>
+      <div>
+        <h2>Frequently Asked Questions</h2>
+        <p>Common questions from staff about using AI tools at school.</p>
+      </div>
+    </div>
+    <div class="tip-card"><div class="tip-num" style="background:var(--gold-dark,#B8963E);">Q</div><div class="tip-body"><h4>Is ChatGPT safe to use for school work?</h4><p>ChatGPT can be used provided you do not enter student personal information or upload school documents. Use generic descriptions and always review the output. For anything involving student data, use Microsoft Copilot via your school M365 account.</p></div></div>
+    <div class="tip-card"><div class="tip-num" style="background:var(--gold-dark,#B8963E);">Q</div><div class="tip-body"><h4>Do I need to make an account for these tools?</h4><p>Each tool is different — this guide tells you clearly which tools require an account and which you can use straight away. Where an account is needed, always use your school email, not a personal one.</p></div></div>
+    <div class="tip-card"><div class="tip-num" style="background:var(--gold-dark,#B8963E);">Q</div><div class="tip-body"><h4>Can my students use AI tools in class?</h4><p>Speak to your Head Teacher first. Most consumer AI tools require users to be 13+ or 18+. This guide includes student-appropriate options, but confirm with administration before running student AI activities.</p></div></div>
+    <div class="tip-card"><div class="tip-num" style="background:var(--gold-dark,#B8963E);">Q</div><div class="tip-body"><h4>What is Microsoft Copilot and do I have it?</h4><p>Microsoft Copilot is an AI assistant built into Word, PowerPoint, Outlook, and Teams. Whether your school has the Copilot licence depends on your M365 subscription. Look for the ✨ Copilot button inside Word or Outlook — if you don't see it, check with IT.</p></div></div>
+    <div class="tip-card"><div class="tip-num" style="background:var(--gold-dark,#B8963E);">Q</div><div class="tip-body"><h4>The AI gave me something wrong — what do I do?</h4><p>This is normal. AI tools can make mistakes, especially with specific syllabus references. Always re-read and edit the output. The more specific your prompt, the better the result. Each tool card includes tips to improve your prompts.</p></div></div>
+    <div class="tip-card"><div class="tip-num" style="background:var(--gold-dark,#B8963E);">Q</div><div class="tip-body"><h4>Am I allowed to use AI to help write assessments?</h4><p>AI can help you draft a starting point, but you should always review, edit, and take professional responsibility for any assessment you give students. Check your school's emerging AI policy for disclosure requirements.</p></div></div>
+    <div class="restart-row"><button class="action-btn" onclick="showPage('navigator')">← Back to Find a Tool</button></div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  PAGE: LESSON WORKSPACE                     -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="page" id="page-workspace">
+  <div class="container">
+
+    <div class="ws-welcome">
+      <div class="ws-welcome-icon">🗂️</div>
+      <div>
+        <h2>My Lesson Workspace</h2>
+        <p>Save your lesson details once and every follow-up prompt — worksheets, differentiation, Canvas pages, assessments — is automatically written to match your exact topic, year group, class needs, and focus. No more filling in placeholders.</p>
+      </div>
+    </div>
+
+    <div class="ws-storage-note">
+      <span style="font-size:16px;flex-shrink:0;">💾</span>
+      <span>Your lessons are saved to this device only. Please create your lessons again if you are using another device.</span>
+    </div>
+
+    <div class="ws-layout">
+
+      <!-- SIDEBAR: saved lessons -->
+      <div class="ws-sidebar">
+        <div class="ws-sidebar-header">
+          <h3>📚 Saved lessons</h3>
+          <span id="wsSavedCount">0 / 10</span>
+        </div>
+        <div class="ws-lesson-list" id="wsLessonList">
+          <div class="ws-empty" id="wsEmptyMsg">No lessons saved yet.<br>Fill in the form to create your first lesson.</div>
+        </div>
+        <div class="ws-capacity-bar">
+          <div class="ws-capacity-fill" id="wsCapacityFill" style="width:0%"></div>
+        </div>
+        <div class="ws-capacity-label" id="wsCapacityLabel">0 of 10 lesson slots used</div>
+        <button class="ws-new-btn" onclick="wsNewLesson()">＋ New lesson</button>
+      </div>
+
+      <!-- MAIN AREA -->
+      <div class="ws-main">
+
+        <!-- FORM -->
+        <div class="ws-form-card" id="wsFormCard">
+          <div class="ws-form-title">✏️ <span id="wsFormTitle">New lesson details</span></div>
+
+          <div class="ws-row-2">
+            <div class="ws-field">
+              <label class="ws-label" for="wsKLA">Subject / KLA</label>
+              <select class="ws-select" id="wsKLA">
+                <option value="">— Select subject —</option>
+                <option value="English">English</option>
+                <option value="Mathematics">Mathematics</option>
+                <option value="Science">Science</option>
+                <option value="HSIE">HSIE (History, Geography, Commerce, Legal)</option>
+                <option value="Technologies / TAS">Technologies / TAS</option>
+                <option value="PDHPE">PDHPE</option>
+                <option value="Creative Arts">Creative Arts</option>
+                <option value="Languages">Languages (LOTE)</option>
+              </select>
+            </div>
+            <div class="ws-field">
+              <label class="ws-label" for="wsYear">Year group</label>
+              <select class="ws-select" id="wsYear">
+                <option value="">— Select year —</option>
+                <option value="Year 7">Year 7</option>
+                <option value="Year 8">Year 8</option>
+                <option value="Year 9">Year 9</option>
+                <option value="Year 10">Year 10</option>
+                <option value="Year 11">Year 11</option>
+                <option value="Year 12">Year 12</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="ws-field">
+            <label class="ws-label" for="wsTopic">Unit / topic name <span class="ws-label-hint">e.g. Animal Farm, Quadratic equations, Cell biology</span></label>
+            <input class="ws-input" type="text" id="wsTopic" placeholder="Enter your unit or topic name">
+          </div>
+
+          <div class="ws-field">
+            <label class="ws-label" for="wsFocus">Specific lesson focus <span class="ws-label-hint">e.g. Chapter 7 — allegory and power, Factorising expressions</span></label>
+            <input class="ws-input" type="text" id="wsFocus" placeholder="What is this particular lesson about?">
+          </div>
+
+          <div class="ws-row-2">
+            <div class="ws-field">
+              <label class="ws-label" for="wsAbility">Overall class ability</label>
+              <select class="ws-select" id="wsAbility">
+                <option value="mixed ability">Mixed ability</option>
+                <option value="mostly working at grade level">Mostly at grade level</option>
+                <option value="mostly needing additional support">Mostly needing support</option>
+                <option value="mostly extension / gifted">Mostly extension / gifted</option>
+              </select>
+            </div>
+            <div class="ws-field">
+              <label class="ws-label" for="wsDuration">Lesson duration</label>
+              <select class="ws-select" id="wsDuration">
+                <option value="50 minutes">50 minutes</option>
+                <option value="60 minutes">60 minutes</option>
+                <option value="70 minutes">70 minutes</option>
+                <option value="90 minutes">90 minutes</option>
+                <option value="100 minutes">100 minutes</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="ws-field">
+            <label class="ws-label">Additional learning needs in this class <span class="ws-label-hint">Tick all that apply</span></label>
+            <div class="ws-check-grid" id="wsNeedsGrid">
+              <label class="ws-check-item" id="chk-eald">
+                <input type="checkbox" value="EAL/D students (English as an additional language or dialect)"> EAL/D
+              </label>
+              <label class="ws-check-item" id="chk-lowlit">
+                <input type="checkbox" value="students with low literacy needs"> Low literacy
+              </label>
+              <label class="ws-check-item" id="chk-gt">
+                <input type="checkbox" value="gifted and talented students"> Gifted & talented
+              </label>
+              <label class="ws-check-item" id="chk-autism">
+                <input type="checkbox" value="students on the autism spectrum"> Autism spectrum
+              </label>
+              <label class="ws-check-item" id="chk-physical">
+                <input type="checkbox" value="students with physical disabilities"> Physical disability
+              </label>
+              <label class="ws-check-item" id="chk-behavioural">
+                <input type="checkbox" value="students with behavioural needs"> Behavioural needs
+              </label>
+              <label class="ws-check-item" id="chk-vision">
+                <input type="checkbox" value="students with vision impairment"> Vision impairment
+              </label>
+              <label class="ws-check-item" id="chk-hearing">
+                <input type="checkbox" value="students with hearing impairment"> Hearing impairment
+              </label>
+            </div>
+          </div>
+
+          <div class="ws-field">
+            <label class="ws-label" for="wsOtherNeeds">Other needs or context <span class="ws-label-hint">Anything not listed above — e.g. "no printing available", "tablet-only class", "students have IEPs for reading"</span></label>
+            <textarea class="ws-textarea" id="wsOtherNeeds" placeholder="Optional — add any other context that should shape the prompts"></textarea>
+          </div>
+
+          <div class="ws-field">
+            <label class="ws-label" for="wsLessonName">Lesson name / label <span class="ws-label-hint">How it appears in your saved lessons list</span></label>
+            <input class="ws-input" type="text" id="wsLessonName" placeholder="e.g. Year 10 English — Animal Farm Week 3">
+          </div>
+
+          <button class="ws-save-btn" id="wsSaveBtn" onclick="wsSaveLesson()">
+            💾 Save lesson &amp; build resources
+          </button>
+        </div>
+
+        <!-- FULL PACK — shown after save -->
+        <div class="ws-pack-card" id="wsPackCard" style="display:none;">
+          <div class="ws-pack-title">🎒 Full lesson pack</div>
+          <div class="ws-pack-sub">All 6 resources for this lesson — plan, slides, worksheet, exit ticket, differentiation, and Canvas page — with every prompt personalised to your lesson details.</div>
+          <button class="ws-generate-btn" onclick="wsShowFullPack(wsLessons.find(l=>l.id===wsCurrentId))" style="margin-bottom:0;">
+            ✦ Generate full lesson pack
+          </button>
+          <div id="wsPackContainer" style="margin-top:1rem;"></div>
+        </div>
+
+        <!-- RESOURCE BUILDER — shown after save -->
+        <div class="ws-builder-card" id="wsBuilderCard" style="display:none;">
+          <div class="ws-builder-title">🛠️ What do you want to build for this lesson?</div>
+          <div class="ws-builder-sub" id="wsBuilderSub">Select one or more resources below — prompts will be written to match your lesson details exactly.</div>
+
+          <div class="ws-resource-grid" id="wsResourceGrid">
+            <!-- populated by JS -->
+          </div>
+
+          <button class="ws-generate-btn" id="wsGenerateBtn" onclick="wsGeneratePrompts()" disabled>
+            ✦ Generate personalised prompts
+          </button>
+
+          <!-- PROMPTS OUTPUT -->
+          <div class="ws-prompts-area" id="wsPromptsArea" style="display:none;">
+            <div class="ws-prompts-header">
+              <div class="ws-prompts-title" id="wsPromptsTitle">Your personalised prompts</div>
+              <button class="ws-copy-all-btn" onclick="wsCopyAll()">📋 Copy all prompts</button>
+            </div>
+            <div id="wsPromptsContainer"></div>
+            <div class="banner navy" style="margin-top:1rem;">
+              <span class="banner-icon">⚖️</span>
+              <div class="banner-body"><strong>Remember:</strong> these prompts are a starting point. Review all AI-generated content before using it with students. You are the educator — your professional judgment matters.</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /ws-main -->
+    </div><!-- /ws-layout -->
+  </div><!-- /container -->
+</div>
+
+
+<!-- ══ FOOTER ══ -->
+<footer class="site-footer">
+  <p>AI Tools for Teachers — for staff use only</p>
+  <p>Contact IT for tool approvals or account queries</p>
+</footer>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  TOOL DATA + LOGIC                          -->
+<!-- ═══════════════════════════════════════════ -->
+<script>
+/* ── STATE ── */
+const state = { who: null, task: null, klaId: null, klaName: null };
+
+/* ── SMOOTH REVEAL HELPER ── */
+function revealPanel(panelId, connId) {
+  if (connId) {
+    const conn = document.getElementById(connId);
+    if (conn) conn.classList.add('revealed');
+  }
+  const panel = document.getElementById(panelId);
+  if (!panel) return;
+  // Small delay so the connector animates first
+  setTimeout(() => {
+    panel.classList.add('revealed');
+    // Smooth scroll to bring the new panel into view
+    setTimeout(() => {
+      iframeScrollTo(panel);
+    }, 60);
+  }, connId ? 200 : 0);
+}
+
+/* ── PAGE SWITCHING ── */
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('visible'));
+  document.getElementById('page-' + id).classList.add('visible');
+  ['navFind','navSafe','navFAQ','navWorkspace'].forEach(b => {
+    const el = document.getElementById(b);
+    if (el) el.classList.remove('active');
+  });
+  const map = { navigator:'navFind', safe:'navSafe', faq:'navFAQ', workspace:'navWorkspace' };
+  if (map[id]) { const el = document.getElementById(map[id]); if(el) el.classList.add('active'); }
+  iframeScrollTop();
+}
+
+/* ── RESET ── */
+function resetFlow() {
+  state.who = null; state.task = null; state.klaId = null; state.klaName = null;
+  // Hide step panels 2, 3, results
+  ['panelStep2','panelStep3','panelResults'].forEach(id => {
+    const el = document.getElementById(id);
+    el.classList.remove('revealed');
+    el.style.transition = 'none';
+    // force reflow then re-enable transition
+    el.offsetHeight;
+    el.style.transition = '';
+  });
+  ['conn12','conn23','conn34'].forEach(id => {
+    const el = document.getElementById(id);
+    el.classList.remove('revealed');
+  });
+  // Clear selections
+  document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('studentWarnBanner').classList.remove('show');
+  showPage('navigator');
+  setTimeout(() => iframeScrollTop(), 100);
+}
+
+function resetToStep(step) {
+  if (step === 1) { resetFlow(); return; }
+  if (step === 2) {
+    // hide step3, results, connectors after step2
+    state.klaId = null; state.klaName = null;
+    ['panelStep3','panelResults','conn23','conn34'].forEach(id => {
+      const el = document.getElementById(id);
+      el.classList.remove('revealed');
+    });
+    document.querySelectorAll('[id^="btn-kla-"]').forEach(b => b.classList.remove('selected'));
+    showPage('navigator');
+    setTimeout(() => iframeScrollTo(document.getElementById('panelStep2')), 200);
+    return;
+  }
+  if (step === 3) {
+    state.klaId = null; state.klaName = null;
+    ['panelResults','conn34'].forEach(id => {
+      const el = document.getElementById(id);
+      el.classList.remove('revealed');
+    });
+    document.querySelectorAll('[id^="btn-kla-"]').forEach(b => b.classList.remove('selected'));
+    showPage('navigator');
+    setTimeout(() => iframeScrollTo(document.getElementById('panelStep3')), 200);
+    return;
+  }
+}
+
+/* ── STEP SELECTIONS ── */
+function selectWho(who) {
+  state.who = who;
+  document.getElementById('btn-who-teacher').classList.toggle('selected', who === 'teacher');
+  document.getElementById('btn-who-students').classList.toggle('selected', who === 'students');
+  document.getElementById('studentWarnBanner').classList.toggle('show', who === 'students');
+  // Reveal step 2
+  revealPanel('panelStep2', 'conn12');
+}
+
+function selectTask(task, el) {
+  state.task = task;
+  document.querySelectorAll('[id^="btn-task-"]').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  // Reveal step 3
+  revealPanel('panelStep3', 'conn23');
+}
+
+function selectKLA(id, name, el) {
+  state.klaId = id; state.klaName = name;
+  document.querySelectorAll('[id^="btn-kla-"]').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  // Build and reveal results
+  buildResults();
+  revealPanel('panelResults', 'conn34');
+}
+
+/* ── TOOL DATABASE ── */
+const tools = {
+
+  /* ─────────────────────────────────────────────
+     LESSON PLAN
+  ───────────────────────────────────────────── */
+  'lesson-plan': {
+    icon:'📋', title:'Lesson Plan',
+    enterprise:[{
+      name:'Microsoft Copilot in Word', type:'ms',
+      account:'School M365 account', accountRequired:true,
+      privacyNote:'Data stays within the school Microsoft system.',
+      desc:'Open Word on your school laptop, click the Copilot (✨) button, and paste the prompt. Copilot generates a structured lesson plan you can edit straight away.',
+      prompt:(kla,who)=>`Create a detailed lesson plan for a NSW high school ${kla} class. Include: lesson title, year group, syllabus outcome (NSW NESA), learning intentions, success criteria, a warm-up activity (5 mins), main learning activities (25–30 mins) with teacher and student actions, a consolidation or exit task (5–10 mins), and resources needed. Use clear, simple language.${who==='students'?' Make student-facing sections age-appropriate.':''}`,
+      steps:['Open Microsoft Word on your school laptop','Click the ✨ Copilot button in the Home toolbar (check with IT if you don\'t see it)','Paste the prompt and add your topic and year group','Review the plan — edit outcomes and timing to suit your class','Save to your school OneDrive']
+    }],
+    consumer:[{
+      name:'TASC Spark (school-promoted)', type:'ms',
+      account:'NSW DoE login — use school credentials', accountRequired:true,
+      privacyNote:'TASC Spark is promoted by your school. Sign in with your NSW DoE credentials.',
+      desc:'TASC Spark (spark.tasc.nsw.edu.au) is an AI planning tool promoted by your school, built specifically for NSW teachers. It understands the local curriculum and syllabus context better than general AI tools.',
+      prompt:(kla,who)=>`Visit spark.tasc.nsw.edu.au and sign in with your NSW DoE credentials. Use the lesson plan generator — select your KLA (${kla}), year group, and enter your topic. TASC Spark will generate a NSW curriculum-aligned lesson plan. Review, adjust, and save directly within the platform.`,
+      steps:['Go to spark.tasc.nsw.edu.au','Sign in with your NSW DoE school credentials','Select "Lesson Plan" from the tool menu','Choose your KLA, year group, and enter your topic','Review and edit the generated plan','Download or save directly from the platform'],
+      link:'https://spark.tasc.nsw.edu.au'
+    },{
+      name:'Google NotebookLM (school-promoted)', type:'ms',
+      account:'Google account — use school account', accountRequired:true,
+      privacyNote:'Promoted by your school. NotebookLM works from sources you upload — it does not train on your data.',
+      desc:'NotebookLM (notebooklm.google.com) lets you upload your syllabus, textbook pages, or existing resources and then generate lesson plans, summaries, or questions based only on those documents. It creates a curriculum-accurate "brain" from your own materials.',
+      prompt:(kla,who)=>`Open NotebookLM at notebooklm.google.com and create a new notebook. Upload your ${kla} syllabus PDF or paste key syllabus dot points as a source. Then ask: "Create a detailed lesson plan for a Year 10 ${kla} class on [your topic] based on the NSW NESA outcomes in this document. Include learning intentions, success criteria, main activities, and resources."`,
+      steps:['Go to notebooklm.google.com and sign in with your school Google account','Click "+ New Notebook"','Upload your NSW syllabus PDF or paste syllabus content as a source','Once processed, click "Chat"','Paste the prompt — add your topic','Download the generated plan or copy into Word or Google Docs'],
+      link:'https://notebooklm.google.com'
+    },{
+      name:'Claude (by Anthropic) — recommended for documents', type:'free',
+      account:'No account required for basic use', accountRequired:false,
+      privacyNote:'Claude does not require an account for basic use. Do not enter student names or personal details.',
+      desc:'Claude is recommended for lesson plans because it produces cleaner, better-structured documents than most other free AI tools — with proper headings, logical flow, and formatting that needs minimal cleanup. No account needed to start.',
+      recommended:true,
+      prompt:(kla,who)=>`Create a detailed, well-structured lesson plan for a NSW high school ${kla} class. Format it clearly with distinct sections and headings. Include: lesson title, year group, NSW NESA syllabus outcome, learning intentions (as "I can" statements), success criteria, a warm-up activity (5 mins), two or three main learning activities (25–30 mins total) with teacher instructions and student tasks clearly separated, a consolidation or exit task (5–10 mins), and a resources list. Use clear, plain language.${who==='students'?' Write student-facing sections in straightforward language appropriate for high school students.':''}`,
+      steps:['Go to claude.ai in your browser — no account needed','Paste the prompt and add your specific topic and year group','Claude produces a well-formatted, structured lesson plan with clear headings','Read through and edit outcomes, timing, and activities to suit your class','Copy into Word or Google Docs — the structure will paste cleanly']
+    },{
+      name:'ChatGPT', type:'free',
+      account:'Free account — use school email', accountRequired:true,
+      privacyNote:'Do not enter student names or personal details. Conversations may be stored by OpenAI.',
+      desc:'ChatGPT handles lesson planning well and responds to specific NSW curriculum context. A free account using your school email is required.',
+      prompt:(kla,who)=>`I am a NSW high school ${kla} teacher. Please create a detailed lesson plan for a high school class. Include: lesson title, year group (Year 9 or 10), relevant NSW NESA syllabus outcome, learning intentions, success criteria, a 5-minute warm-up, main activities (25–30 minutes) with teacher and student tasks, a closing exit task (5–10 minutes), and a resources list. Use clear, plain language.${who==='students'?' Student-facing sections should suit high school students.':''}`,
+      steps:['Go to chatgpt.com and sign in with your school email','Click "New chat"','Paste the prompt and press Enter','Add your topic, year group, and any specific adjustments','Copy the final plan into Word or Google Docs']
+    },{
+      name:'Google Gemini', type:'free',
+      account:'Google account — use school account', accountRequired:true,
+      privacyNote:'Use your school Google account where possible. Do not enter student names.',
+      desc:'Gemini integrates directly with Google Docs for easy saving and works well for lesson planning. Sign in with your school Google account for better data protection.',
+      prompt:(kla,who)=>`Create a NSW high school ${kla} lesson plan. Include: lesson title, year group, NESA syllabus outcome, learning intentions (as "I can" statements), success criteria, warm-up (5 mins), two or three main activities with teacher and student steps, a consolidation task, and a resources list. Format clearly so it could be printed and used in class.`,
+      steps:['Go to gemini.google.com','Sign in with your school Google account','Paste the prompt and press Enter','Click "Export to Docs" to save directly to Google Drive','Edit topic, year group, and outcomes to match your class']
+    }]
+  },
+
+  /* ─────────────────────────────────────────────
+     LESSON SLIDES
+  ───────────────────────────────────────────── */
+  'lesson-slides': {
+    icon:'📊', title:'Lesson Slides',
+    enterprise:[{
+      name:'Microsoft Copilot in PowerPoint', type:'ms',
+      account:'School M365 account', accountRequired:true,
+      privacyNote:'Data stays within the school Microsoft system.',
+      desc:'Open PowerPoint, click the Copilot (✨) button, and ask it to create a presentation. It generates a full deck with headings, dot points, and speaker notes ready to edit.',
+      prompt:(kla,who)=>`Create a PowerPoint presentation for a NSW high school ${kla} lesson. Include: a title slide, a learning intentions slide ("By the end of this lesson you will be able to..."), 4–6 content slides on the key concepts, a class activity or discussion slide, and a summary/exit slide. Use clear headings and short dot points. Add speaker notes for each slide.${who==='students'?' Write slide content so students can read and understand it independently.':''}`,
+      steps:['Open Microsoft PowerPoint on your school laptop','Click the ✨ Copilot button in the Home toolbar','Paste the prompt — add your specific topic','Copilot builds the slide structure — review and edit each slide','Add images or school branding','Save to OneDrive and share via Canvas or Teams']
+    }],
+    consumer:[{
+      name:'Claude (by Anthropic) — recommended for slide content', type:'free',
+      account:'No account required for basic use', accountRequired:false,
+      privacyNote:'No account needed for basic use. Do not enter student names.',
+      desc:'Claude is recommended for generating slide content because it produces better-structured, well-organised text with clear headings and logical flow — ready to paste directly into PowerPoint or Google Slides with minimal editing.',
+      recommended:true,
+      prompt:(kla,who)=>`Write the complete content for a PowerPoint presentation for a NSW high school ${kla} lesson. For every slide, provide the slide title on its own line, then 4–5 concise bullet points, then speaker notes in italics. Include: a title slide, a learning intentions slide ("By the end of this lesson students will be able to..."), 5 content slides covering the key topic, one interactive activity slide with a class discussion question, and a summary/exit slide. Keep bullet points short and clear. Ask me for the topic before you begin.`,
+      steps:['Go to claude.ai — no account needed','Paste the prompt — Claude will ask for your topic','Claude produces clearly structured slide-by-slide content','Copy each slide\'s content into PowerPoint or Google Slides','Add visuals, images, and formatting as needed']
+    },{
+      name:'ChatGPT', type:'free',
+      account:'Free account — use school email', accountRequired:true,
+      privacyNote:'Do not enter student names or personal details.',
+      desc:'ChatGPT writes slide content in a clear slide-by-slide format you can paste into PowerPoint or Google Slides.',
+      prompt:(kla,who)=>`Write the content for a PowerPoint presentation for a NSW high school ${kla} lesson. For each slide provide: slide title, 4–5 bullet points, and brief speaker notes. Include: a title slide, a learning intentions slide, 5 content slides, one activity slide, and a summary slide. Keep bullet points short. Please ask me for the topic before you begin.`,
+      steps:['Go to chatgpt.com and sign in','Paste the prompt — ChatGPT will ask for your topic','Copy the slide content into PowerPoint or Google Slides','Add visuals and formatting as needed']
+    },{
+      name:'Canva (free for educators)', type:'free',
+      account:'Free account to save — use school email', accountRequired:false,
+      privacyNote:'Canva for Education is free for verified teachers. No student data needed.',
+      desc:'Canva has thousands of professional presentation templates. Generate your slide text using Claude or ChatGPT first, then drop it into a Canva template for a polished result.',
+      prompt:(kla,who)=>`Generate text content for a Canva ${kla} lesson presentation. For 8 slides — title, learning intentions, 5 content slides, one discussion activity, and a summary — provide a clear heading and 3–4 short dot points per slide. Topic: [add your topic here].`,
+      steps:['Use Claude (preferred) or ChatGPT to generate your slide text first','Go to canva.com/education and apply for a free educator account','Search "presentation" in Canva\'s template library and choose a template','Paste the generated text into each slide in Canva','Download as PowerPoint (.pptx) or share the Canva link directly']
+    }]
+  },
+
+  /* ─────────────────────────────────────────────
+     CLASSROOM RESOURCE
+  ───────────────────────────────────────────── */
+  'classroom-resource': {
+    icon:'📄', title:'Classroom Resource',
+    enterprise:[{
+      name:'Microsoft Copilot in Word', type:'ms',
+      account:'School M365 account', accountRequired:true,
+      privacyNote:'Data stays within the school Microsoft system.',
+      desc:'Use Copilot in Word to generate worksheets, reading guides, or question sets. The prompt below produces a ready-to-print resource.',
+      prompt:(kla,who)=>`Create a classroom worksheet for a NSW high school ${kla} class. Include: a title, a brief student introduction paragraph, 3–4 short-answer questions, one extended response question, and one optional challenge task. Questions should move from recall to application and analysis. Format clearly for printing.${who==='students'?' Write in straightforward language for high school students.':''}`,
+      steps:['Open Microsoft Word on your school laptop','Click the ✨ Copilot button','Paste the prompt and add your specific topic','Edit questions to suit your class level','Format and print, or share via Canvas or Teams']
+    }],
+    consumer:[{
+      name:'TASC Spark (school-promoted)', type:'ms',
+      account:'NSW DoE login — use school credentials', accountRequired:true,
+      privacyNote:'Promoted by your school. Sign in with your NSW DoE credentials.',
+      desc:'TASC Spark includes resource generation tools built for NSW teachers. Enter your topic and it will generate curriculum-aligned worksheets and activities.',
+      prompt:(kla,who)=>`Visit spark.tasc.nsw.edu.au and sign in. Select "Resource" or "Activity" from the tool menu. Choose your KLA (${kla}), year group, and enter your topic. Review and download the generated resource directly from the platform.`,
+      steps:['Go to spark.tasc.nsw.edu.au','Sign in with your NSW DoE credentials','Select "Resource" or "Activity" from the tool menu','Enter your KLA, year group, and topic','Review, edit, and download the resource'],
+      link:'https://spark.tasc.nsw.edu.au'
+    },{
+      name:'Google NotebookLM (school-promoted)', type:'ms',
+      account:'Google account — use school account', accountRequired:true,
+      privacyNote:'Promoted by your school. NotebookLM works from sources you upload — does not train on your data.',
+      desc:'Upload your syllabus or existing materials to NotebookLM and ask it to generate worksheets and study guides based only on those documents — keeping resources curriculum-accurate.',
+      prompt:(kla,who)=>`In NotebookLM, create a new notebook and upload your ${kla} resource materials (syllabus, textbook extract, or existing worksheet). Then ask: "Create a student worksheet for a Year 10 ${kla} class on [your topic] based on the content in this document. Include 5 short-answer questions, 2 application questions, and one reflection prompt."`,
+      steps:['Go to notebooklm.google.com and sign in with your school Google account','Create a new notebook and upload your source document','Once processed, click "Chat"','Paste the prompt and add your topic','Copy the output into Word or Google Docs'],
+      link:'https://notebooklm.google.com'
+    },{
+      name:'Claude (by Anthropic) — recommended for documents', type:'free',
+      account:'No account required for basic use', accountRequired:false,
+      privacyNote:'No account needed for basic use. Do not enter student names.',
+      desc:'Claude is recommended for generating worksheets and classroom resources because it produces well-structured, clearly formatted documents that are easy to copy into Word or print directly.',
+      recommended:true,
+      prompt:(kla,who)=>`Create a well-formatted classroom worksheet for a NSW high school ${kla} class. Use clear section headings and organise the content logically. Include: a lesson title, a brief context paragraph for students, 4 short-answer questions (progressing from knowledge recall to application), one extended response question, and one optional extension task for students who finish early. Write in clear, direct language suitable for high school students.${who==='students'?' Make the language straightforward and engaging for students.':''}`,
+      steps:['Go to claude.ai — no account needed','Paste the prompt and add your topic','Claude produces a cleanly formatted worksheet with proper headings and structure','Copy into Word or Google Docs — headings and layout paste well','Edit questions and adjust difficulty to suit your class']
+    },{
+      name:'ChatGPT', type:'free',
+      account:'Free account — use school email', accountRequired:true,
+      privacyNote:'Do not enter student names or personal details.',
+      desc:'ChatGPT generates solid worksheets, quiz questions, and activity guides. Copy the result into Word or Google Docs.',
+      prompt:(kla,who)=>`Create a classroom activity worksheet for a Year 10 NSW ${kla} class on [insert your topic]. Include: a clear title and student instructions, a short knowledge check (5 questions), two application questions, and one higher-order thinking question. Keep language clear. Format with clear sections.`,
+      steps:['Go to chatgpt.com and sign in','Paste the prompt — replace [insert your topic] with your topic','Review and adjust difficulty if needed','Copy into Microsoft Word or Google Docs','Format and add your school header before printing']
+    }]
+  },
+
+  /* ─────────────────────────────────────────────
+     ASSESSMENT
+  ───────────────────────────────────────────── */
+  'assessment': {
+    icon:'✅', title:'Assessment Task',
+    enterprise:[{
+      name:'Microsoft Copilot in Word', type:'ms',
+      account:'School M365 account', accountRequired:true,
+      privacyNote:'Data stays within the school system. Do not include existing student work in your prompt.',
+      desc:'Copilot in Word drafts assessment task notifications — task description, marking criteria, and submission requirements. Always review and align to your specific NESA outcomes.',
+      prompt:(kla,who)=>`Draft an assessment task notification for a NSW high school ${kla} class. Include: assessment title, year group, weighting, task description (2–3 paragraphs), NESA outcome(s) assessed, a marking criteria table with marks allocated, a submission date placeholder, and submission requirements. Use formal but clear language.`,
+      steps:['Open Microsoft Word on your school laptop','Click the ✨ Copilot button','Paste the prompt — add your topic, year group, and weighting','Check NESA outcomes at nesa.nsw.edu.au','Adjust marking criteria to match your school\'s format','Have your Head Teacher review before distributing']
+    }],
+    consumer:[{
+      name:'Claude (by Anthropic) — recommended for documents', type:'free',
+      account:'No account required for basic use', accountRequired:false,
+      privacyNote:'No account needed for basic use. Do not include student names or paste student work.',
+      desc:'Claude is recommended for drafting assessment tasks because it produces well-structured documents with clear sections, proper criteria tables, and professional formatting that closely matches a real assessment notification layout.',
+      recommended:true,
+      prompt:(kla,who)=>`Draft a complete assessment task notification for a NSW high school ${kla} class. Format it professionally with clear section headings. Include: assessment title, year group, task weighting, a 2–3 paragraph task description that clearly explains what students must do, the NSW NESA ${kla} Stage 5 outcome(s) being assessed, a marking criteria table (two columns: criteria | marks), submission requirements, and a submission date placeholder. Write in formal but clear language suitable for a school assessment document. Do not include any student names.`,
+      steps:['Go to claude.ai — no account needed','Paste the prompt — add your specific topic, year group, and task type','Claude generates a professionally formatted assessment notification','Cross-check any NESA outcomes against nesa.nsw.edu.au','Copy into Word — the table and headings will paste cleanly','Have your Head Teacher review before distributing to students']
+    },{
+      name:'ChatGPT', type:'free',
+      account:'Free account — use school email', accountRequired:true,
+      privacyNote:'Do not include student names or paste confidential documents.',
+      desc:'ChatGPT generates solid first drafts of assessment tasks, rubrics, and marking guides. Always verify NESA outcomes against the official syllabus.',
+      prompt:(kla,who)=>`I am a NSW high school ${kla} teacher. Draft a project-based assessment task notification for a Year 10 class. Include: task title, task overview paragraph, skills and knowledge assessed (NSW NESA ${kla} Stage 5), a step-by-step task breakdown for students, a marking rubric with criteria and marks, and submission requirements. Do not include any student names.`,
+      steps:['Go to chatgpt.com and sign in','Paste the prompt — add your topic and task type','Ask follow-ups like "now write just the rubric as a table"','Cross-check NESA outcomes at nesa.nsw.edu.au','Copy into Word and format to your school\'s assessment template','Get Head Teacher sign-off before distributing']
+    }]
+  },
+
+  /* ─────────────────────────────────────────────
+     DIFFERENTIATE
+  ───────────────────────────────────────────── */
+  'differentiate': {
+    icon:'🎯', title:'Differentiate a Lesson',
+    enterprise:[{
+      name:'Microsoft Copilot in Word', type:'ms',
+      account:'School M365 account', accountRequired:true,
+      privacyNote:'Describe student needs generically — no student names or NDIS/EAL details.',
+      desc:'Copilot takes an existing activity and produces scaffolded, adjusted, or extended versions. Paste your activity into Word first, then use Copilot to generate differentiated versions.',
+      prompt:(kla,who)=>`I have a ${kla} classroom activity for a mixed-ability Year 10 class. Create three versions: (1) Scaffolded — sentence starters, glossary of key terms, simplified instructions; (2) Standard — clear instructions, appropriate challenge; (3) Extension — higher-order questions and independent research tasks. Do not mention specific student names or diagnoses.`,
+      steps:['Open Microsoft Word and paste your existing activity','Click the ✨ Copilot button and paste the prompt','Review each of the three versions Copilot generates','Adjust reading level and complexity as needed','Save all three versions for use in class']
+    }],
+    consumer:[{
+      name:'Claude (by Anthropic) — recommended', type:'free',
+      account:'No account required for basic use', accountRequired:false,
+      privacyNote:'No account needed. Describe student needs generically — no names or diagnoses.',
+      desc:'Claude is recommended for differentiation because it produces clearly labelled, consistently formatted versions of an activity that are easy to compare and print side-by-side. No account needed.',
+      recommended:true,
+      prompt:(kla,who)=>`I am a NSW ${kla} teacher. Take the following activity [paste your activity here, or describe it] and produce three clearly labelled, well-formatted versions for a mixed-ability Year 10 class:\n\n1. SUPPORTED VERSION — simplified language, sentence starters, key vocabulary defined in a glossary box\n2. STANDARD VERSION — clear instructions, appropriate level of challenge\n3. EXTENSION VERSION — higher-order thinking questions, requires evaluation or independent inquiry\n\nFormat each version with a clear heading so they are easy to identify and print separately. Do not reference specific student names or diagnoses.`,
+      steps:['Go to claude.ai — no account needed','Paste the prompt — add your activity text or describe it','Claude produces three clearly labelled, formatted versions','Each version has its own heading — easy to copy and print separately','Review each version and adjust to your class needs']
+    },{
+      name:'ChatGPT', type:'free',
+      account:'Free account — use school email', accountRequired:true,
+      privacyNote:'Describe student needs generically. Never enter a student\'s name or learning details.',
+      desc:'ChatGPT handles differentiation well. Describe your activity and ask for scaffolded, standard, and extension versions.',
+      prompt:(kla,who)=>`I am a NSW ${kla} teacher. Create differentiated versions of a learning activity on [insert your topic]: (1) Supported — simplified language, sentence starters, vocabulary defined; (2) Standard — clear, appropriate challenge; (3) Extension — higher-order thinking, independent inquiry. Do not reference specific students.`,
+      steps:['Go to chatgpt.com and sign in','Replace [insert your topic] with your lesson topic','Optionally paste your original activity text after the prompt','Review all three versions for suitability','Copy into Word or Google Docs — label versions clearly']
+    }]
+  },
+
+  /* ─────────────────────────────────────────────
+     CANVAS LMS
+  ───────────────────────────────────────────── */
+  'canvas': {
+    icon:'🖥️', title:'Canvas LMS Page',
+    enterprise:[{
+      name:'Microsoft Copilot in Edge', type:'ms',
+      account:'School M365 account', accountRequired:true,
+      privacyNote:'Data stays within the school Microsoft system.',
+      desc:'Copilot in Edge writes the HTML code for your Canvas page. Generate a complete styled page and paste it into Canvas\'s HTML editor (the "</>" button in the page editor).',
+      prompt:(kla,who)=>`Write clean HTML code for a Canvas LMS page for a NSW high school ${kla} lesson. Include: a styled banner heading with the lesson title, a "Learning Intentions" section with a bullet list, a "What You Need to Do" section with numbered steps, an embedded YouTube video placeholder (dummy iframe), a resources section with placeholder links, and a "Submit Your Work" section. Inline CSS only. Navy (#002060) and white colour scheme.${who==='students'?' Write instructions in simple, direct language for students.':''}`,
+      steps:['Open Microsoft Edge and go to copilot.microsoft.com','Sign in with your school Microsoft account','Paste the prompt — add your lesson topic','Copy the HTML code Copilot generates','In Canvas, open your page, click "Edit", then the "</>" HTML editor button','Paste the code and click Save & Publish','Preview and ask Copilot to adjust anything as needed']
+    }],
+    consumer:[{
+      name:'Claude (by Anthropic) — recommended for HTML', type:'free',
+      account:'No account required for basic use', accountRequired:false,
+      privacyNote:'No account needed. Do not enter student personal details.',
+      desc:'Claude is the strongest free tool for writing Canvas HTML pages — it produces the cleanest, most readable code that pastes into Canvas without errors, and explains what each section does in plain language. No account needed.',
+      recommended:true,
+      prompt:(kla,who)=>`Create a complete, ready-to-paste HTML page for a Canvas LMS ${kla} lesson. Use inline styles only (no external CSS files). Include: a banner div with navy (#002060) background and gold (#FFD966) lesson title text, a "Learning Intentions" section with 3 clearly formatted bullet points, a "What You Need to Do" section with numbered steps, a video placeholder (grey background box with centred text "Video goes here"), a "Resources" section with 3 placeholder download links, and a "Need help?" footer section with a teacher contact placeholder. Make it clean, professional, and readable on a standard laptop screen. No student names.${who==='students'?' Write all instructions in direct, simple language appropriate for high school students.':''}`,
+      steps:['Go to claude.ai — no account needed','Paste the prompt and add your lesson title and topic','Copy all the HTML code Claude generates','In Canvas, open your page editor and click the "</>" HTML button','Paste the code — click Save & Publish','Preview the page — return to Claude to adjust: "change the heading colour to..." or "add a new section for..."']
+    },{
+      name:'ChatGPT', type:'free',
+      account:'Free account — use school email', accountRequired:true,
+      privacyNote:'Do not paste student data alongside the HTML prompt.',
+      desc:'ChatGPT also writes Canvas HTML pages well. A good alternative if you already have a ChatGPT account.',
+      prompt:(kla,who)=>`Write a complete HTML page for a Canvas LMS ${kla} lesson module. Inline CSS only. Include: a banner with navy (#002060) background and gold (#FFD966) lesson title, a "Learning Intentions" section with 3 dot points, a "Task Instructions" section with numbered steps, a video placeholder (grey box, centred "Video goes here"), a "Resources" section with 3 placeholder links, and a footer with a teacher name placeholder. Clean and professional. No student names.`,
+      steps:['Go to chatgpt.com and sign in','Paste the prompt — add your lesson title and topic','Copy all the HTML code from the response','In Canvas, add a new page, click "Edit", then the "</>" HTML icon','Paste your code — click Save','Preview the page — return to ChatGPT to adjust colours or layout']
+    }]
+  },
+
+  /* ─────────────────────────────────────────────
+     AI MEDIA — expanded
+  ───────────────────────────────────────────── */
+  'ai-media': {
+    icon:'🎬', title:'AI Media — Video, Audio, Images & Animation',
+    enterprise:[{
+      name:'Clipchamp (in Microsoft 365)', type:'ms',
+      account:'School M365 account', accountRequired:true,
+      privacyNote:'Built into Microsoft 365. Data stays within the school system.',
+      desc:'Clipchamp is Microsoft\'s free video editor in M365 — AI text-to-speech voiceover, auto-captions, and basic editing. Great for short explainer videos without extra software.',
+      prompt:(kla,who)=>`Write a script for a 2-minute explainer video on [your ${kla} topic]. Include: a hook question to open (10 seconds), a clear concept explanation (60 seconds), a worked example (30 seconds), and a summary of what students should now understand (20 seconds). Write as natural spoken language — short sentences, simple words.`,
+      steps:['Open Clipchamp from the Microsoft 365 app launcher (the 9-dot grid in Outlook or Teams)','Click "Create a video" → "Start with a script"','Use Claude or ChatGPT to generate your script first (prompt above)','Paste your script and add background images or slides','Use the Text to Speech feature for an AI voiceover','Export as MP4 — upload to Canvas, Teams, or SharePoint']
+    },{
+      name:'Microsoft Designer (in M365)', type:'ms',
+      account:'School M365 account', accountRequired:true,
+      privacyNote:'Built into Microsoft 365. Data stays within the school system. Safe for school use.',
+      desc:'Microsoft Designer generates high-quality images from a text description. Access it at designer.microsoft.com or from within PowerPoint. Free with your school M365 account — no extra sign-up. \n\n💡 Tip: Use Claude to write you a detailed image prompt first for better results.',
+      prompt:(kla,who)=>`Generate an educational illustration for a ${kla} lesson on [your topic]. The image should clearly show [describe what you need — e.g. a labelled diagram, a process, a scene]. Style: clean, educational, suitable for a classroom slide or worksheet. No text in the image — I will add labels myself.`,
+      steps:['Go to designer.microsoft.com and sign in with your school M365 account','Click "Image Creator"','Paste your description — be specific about subject, style, and colours','💡 For better results: ask Claude (claude.ai) to write a detailed image description for you first, then paste that into Designer','Generate and download the image','Insert into PowerPoint, Word, or your Canvas page']
+    }],
+    consumer:[
+      /* IMAGE GENERATION */
+      {
+        name:'Canva AI — Magic Media', type:'free',
+        account:'Free educator account — use school email', accountRequired:true,
+        privacyNote:'Canva for Education is free for verified teachers. Do not upload student images.',
+        desc:'Canva\'s Magic Media generates images and short video clips from a text prompt. The free educator account unlocks all Pro AI features. Great for lesson visuals, posters, and animated graphics.\n\n💡 Tip: Use Claude to write you a detailed image description first for much better results.',
+        prompt:(kla,who)=>`[First, ask Claude (claude.ai) to write you a detailed image prompt by saying: "Write me a detailed image generation prompt for Canva Magic Media. I need a classroom-appropriate visual for a ${kla} lesson on [your topic]. Describe the scene, style, colours, and layout in specific detail."]\n\nThen paste Claude's description into Canva Magic Media.`,
+        steps:['Step 1 — Get a better image prompt from Claude: go to claude.ai and ask "Write me a detailed Canva image prompt for a [topic] lesson visual"','Step 2 — Go to canva.com/education and sign in with your educator account','Step 3 — Open a design, click "Apps" → "Magic Media" or "AI Image Generator"','Step 4 — Paste Claude\'s description and click Generate','Step 5 — Add the image to your design and edit as needed','Download or share directly from Canva']
+      },{
+        name:'Adobe Firefly', type:'free',
+        trialNote:'Free trial available — no credit card needed to start',
+        paidNote:'Paid plan required after trial. Visit adobe.com/firefly for current pricing and education discounts before signing up.',
+        account:'Free Adobe account — use school email', accountRequired:true,
+        privacyNote:'Firefly is trained on licensed content — suitable for educational use. Do not upload student images.',
+        desc:'Adobe Firefly generates very high quality, commercially safe images from text descriptions. Excellent for professional-looking classroom visuals and posters. A free trial is available — test before committing to a paid plan.\n\n💡 Tip: Ask Claude to write a detailed image description first for much better results.',
+        prompt:(kla,who)=>`[First, ask Claude (claude.ai): "Write me a detailed Adobe Firefly image generation prompt for a ${kla} lesson on [your topic]. I need a [describe what you want — e.g. educational diagram, scene, poster visual]. Make the prompt highly specific about subject, style, lighting, and colours."]\n\nThen paste Claude's prompt into Adobe Firefly's text field.`,
+        steps:['Step 1 — Go to claude.ai and ask: "Write me a detailed Adobe Firefly prompt for [describe your image]"','Step 2 — Go to firefly.adobe.com and create a free Adobe account with your school email','Step 3 — A free trial is available — no credit card required to start','Step 4 — Click "Text to Image" and paste Claude\'s detailed prompt','Step 5 — Generate and download your image','Note: after the free trial, a paid plan is required — visit adobe.com/firefly for education pricing']
+      },
+      /* VIDEO */
+      {
+        name:'Runway ML', type:'free',
+        trialNote:'Free trial: 125 credits on sign-up — no credit card needed',
+        paidNote:'Paid plan required after free credits are used. Visit runwayml.com for current pricing before signing up.',
+        account:'Free account — use school email', accountRequired:true,
+        privacyNote:'Consumer tool. Do not upload student images or personal content.',
+        desc:'Runway generates short AI video clips from a text description or still image. Useful for animated explainer visuals or engaging intro clips. A free trial with 125 credits lets you test it before paying.',
+        prompt:(kla,who)=>`Write a text-to-video prompt for Runway ML to create a short educational animation for a ${kla} lesson on [your topic]. Describe: the visual scene (e.g. "a plant cell dividing slowly, blue background, clean scientific illustration"), the movement or animation, and the duration (5–10 seconds). Keep it simple and school-appropriate.`,
+        steps:['Go to runwayml.com and create a free account with your school email','Free trial: 125 credits — no credit card needed','Click "Text to Video" or "Image to Video"','Paste your prompt — keep it under 2 sentences for best results','Generate and download the video clip (MP4)','Insert into PowerPoint, Canva, or Clipchamp','Note: paid plan needed after free credits — visit runwayml.com for pricing']
+      },{
+        name:'Synthesia', type:'free',
+        trialNote:'Free trial: 1 free video up to 3 minutes — no credit card needed',
+        paidNote:'Paid plan required for ongoing use. Visit synthesia.io/pricing for plans and education discounts before signing up.',
+        account:'Free account — use school email', accountRequired:true,
+        privacyNote:'Consumer tool. Do not enter student names, personal data, or school-confidential content in scripts.',
+        desc:'Synthesia creates AI presenter videos — type a script and an AI avatar reads it on screen. Ideal for making professional instructional videos for Canvas. A free trial video is available to test before committing.',
+        prompt:(kla,who)=>`Write a 2-minute instructional video script for a Synthesia AI presenter for a ${kla} lesson on [your topic]. Include: welcome and topic introduction (20 seconds), key concept explanation in plain language (60 seconds), one worked example (30 seconds), and summary of what students should do next (10 seconds). Write as natural spoken language — short sentences, no jargon.`,
+        steps:['Go to synthesia.io and create a free account with your school email','Free trial: 1 video up to 3 minutes — no credit card needed','Click "Create Video" → "Start from scratch"','Choose an AI avatar and background','Use Claude to write your script first (prompt above) — paste it into the script box','Click Generate — takes 5–10 minutes','Download the MP4 and upload to Canvas or Teams','Note: paid plan needed for more than 1 video — visit synthesia.io/pricing']
+      },
+      /* AUDIO */
+      {
+        name:'ElevenLabs (AI voiceover)', type:'free',
+        trialNote:'Free tier: ~10,000 characters/month — no credit card needed',
+        paidNote:'Paid plans available for higher usage. Visit elevenlabs.io/pricing if you need more than the free monthly limit.',
+        account:'Free account — use school email', accountRequired:true,
+        privacyNote:'ElevenLabs stores text inputs. Do not enter student names or personal information.',
+        desc:'ElevenLabs converts written text into a natural-sounding voice recording. Perfect for accessible audio instructions or adding narration to Clipchamp videos. Free tier gives ~10,000 characters per month.',
+        prompt:(kla,who)=>`Write a clear voiceover script (90–120 seconds when read aloud) for a ${kla} lesson on [your topic]. Introduce the topic, explain the key concept in plain language, give one example, and tell students what to do next. Write conversationally — as if a teacher is speaking directly to students.`,
+        steps:['Use Claude to generate your script first (paste the prompt above into claude.ai for a better-structured script)','Go to elevenlabs.io and create a free account with your school email','Click "Text to Speech"','Paste your script','Choose a voice — "Rachel" or "Adam" are clear and professional','Click Generate — download the MP3','Upload to Canvas, Teams, or embed in PowerPoint']
+      },
+      /* ANIMATION */
+      {
+        name:'Adobe Express', type:'free',
+        account:'Free account — use school email', accountRequired:true,
+        privacyNote:'Free plan available. Do not upload student photos without consent.',
+        desc:'Adobe Express makes short animated videos, posters, and infographics with AI assistance. The free plan is sufficient for most classroom uses.',
+        prompt:(kla,who)=>`Describe the content I need for a 30-second animated explainer video about [your ${kla} topic]. List: the 5 key visual elements, the text that should appear on screen for each scene, and the sequence of scenes. Keep it simple enough to build in a basic animation tool.`,
+        steps:['Go to express.adobe.com and create a free account with your school email','Click "Create" → "Video"','Choose an animated template or start blank','Add your text, images, and choose an animation style','Export and download — free education plan is watermark-free']
+      }
+    ]
+  },
+
+  /* ─────────────────────────────────────────────
+     CODING HELP
+  ───────────────────────────────────────────── */
+  'coding': {
+    icon:'💻', title:'Coding Help',
+    enterprise:[{
+      name:'Microsoft Copilot in Edge', type:'ms',
+      account:'School M365 account', accountRequired:true,
+      privacyNote:'Data stays within the school Microsoft system.',
+      desc:'Open Microsoft Edge and use the Copilot sidebar (✨ icon, top right). Ask it to explain code, find bugs, or write new code. Useful for both teachers and students.',
+      prompt:(kla,who)=>`${who==='students'?'I am a high school Software Engineering student. ':'I am a high school Technologies teacher. '}Please help me with the following coding task: [describe what you need the code to do, or paste your code here]. Explain what the code does in plain language, identify any errors, and suggest how to improve it. Use Python / JavaScript / [your language] as appropriate.`,
+      steps:['Open Microsoft Edge on your school laptop','Click the ✨ Copilot icon in the top-right corner of the browser','Paste the prompt — describe your task or paste your code','Ask follow-ups like "explain line 5" or "how would I add a loop here?"','Copy the corrected or generated code into your coding environment']
+    }],
+    consumer:[{
+      name:'Claude (by Anthropic) — recommended for coding', type:'free',
+      account:'No account required for basic use', accountRequired:false,
+      privacyNote:'No account needed for basic use. Do not paste student personal data alongside code.',
+      desc:'Claude is the strongest free tool for coding help — it explains code clearly for beginners, spots bugs accurately, writes well-commented code, and structures its explanations in a way that is easy to follow. No account needed. Recommended first for Technologies and Software Engineering teachers.',
+      recommended:true,
+      prompt:(kla,who)=>`${who==='students'?'I am a Year 11 Software Engineering student working on a project. ':'I am a Software Engineering / Technologies teacher preparing a resource. '}I need help with the following: [describe your task or paste your code here]. Please: (1) explain what the code does or should do in plain language, (2) identify any bugs or errors with clear explanations, (3) provide a corrected or improved version, and (4) add comments to the code so a student can understand each section.`,
+      steps:['Go to claude.ai — no account needed','Paste the prompt and describe your coding task or paste existing code below it','Claude explains, corrects, and comments the code clearly','Ask follow-up questions — Claude holds the full conversation context','Ask "explain this to a Year 10 student" to get simpler explanations','Copy corrected code into your IDE or development environment']
+    },{
+      name:'ChatGPT', type:'free',
+      account:'Free account — use school email', accountRequired:true,
+      privacyNote:'Do not paste student personal data. Code itself is fine to paste.',
+      desc:'ChatGPT writes and debugs code in Python, JavaScript, HTML/CSS, and most other languages. A solid alternative if you already have an account.',
+      prompt:(kla,who)=>`${who==='students'?'I am a high school Software Engineering student. ':'I am a NSW high school Technologies teacher. '}I need help writing code for: [describe the program or task]. Please write working code in [Python / JavaScript / HTML — choose one], explain each section in plain language, and show an example of the output. Mention common mistakes students make with this type of code.`,
+      steps:['Go to chatgpt.com and sign in','Paste the prompt — specify your programming language','Review the code output — test it yourself before giving to students','Ask "now add error handling" or "rewrite this for a beginner" to refine','Copy final code into your coding environment or lesson resource']
+    }]
+  },
+
+  /* full-pack is handled by buildFullPack() — stub keeps selectTask happy */
+  'full-pack': { icon:'🎒', title:'Full Lesson Pack', enterprise:[], consumer:[] }
+
+};
+
+
+/* ═══════════════════════════════════════════════
+   FULL LESSON PACK
+═══════════════════════════════════════════════ */
+
+const PACK_SECTIONS = [
+  {
+    id: 'plan',
+    num: 1,
+    icon: '📋',
+    title: 'Lesson Plan',
+    toolName: 'Claude (recommended) or TASC Spark',
+    toolType: 'free',
+    toolURL: 'https://claude.ai',
+    toolURL2: 'https://spark.tasc.nsw.edu.au',
+    toolLabel: 'Open Claude',
+    toolLabel2: 'Open TASC Spark',
+    prompt: (kla) => `Create a detailed, well-structured lesson plan for a NSW high school ${kla} class. Format it clearly with distinct section headings. Include: lesson title, year group [add yours], NSW NESA syllabus outcome, learning intentions (as "I can" statements), success criteria, a warm-up activity (5 mins), two or three main learning activities (25–30 mins) with teacher instructions and student tasks clearly separated, a consolidation or exit task (5–10 mins), differentiation notes for each activity, and a resources list. Topic: [add your topic].`
+  },
+  {
+    id: 'slides',
+    num: 2,
+    icon: '📊',
+    title: 'Lesson Slides',
+    toolName: 'Microsoft Copilot in PowerPoint (recommended) or Claude',
+    toolType: 'ms',
+    toolURL: 'https://www.microsoft365.com/launch/powerpoint',
+    toolURL2: 'https://claude.ai',
+    toolLabel: 'Open PowerPoint',
+    toolLabel2: 'Open Claude',
+    prompt: (kla) => `Write the complete content for a PowerPoint presentation for a NSW high school ${kla} lesson on [add your topic]. For each slide provide the slide title, 4–5 concise bullet points, and brief speaker notes. Include: a title slide, a learning intentions slide ("By the end of this lesson students will be able to..."), 5 content slides covering key concepts, one interactive activity or discussion slide, and a summary/exit slide. Keep bullet points short and clear.`
+  },
+  {
+    id: 'worksheet',
+    num: 3,
+    icon: '📄',
+    title: 'Worksheet / Activity',
+    toolName: 'Claude (recommended) or ChatGPT',
+    toolType: 'free',
+    toolURL: 'https://claude.ai',
+    toolURL2: 'https://chatgpt.com',
+    toolLabel: 'Open Claude',
+    toolLabel2: 'Open ChatGPT',
+    prompt: (kla) => `Create a well-formatted classroom worksheet for a NSW high school ${kla} class on [add your topic]. Use clear section headings. Include: a lesson title, a brief context paragraph for students, 4 short-answer questions (progressing from recall to application), one extended response question, and one optional extension task. Include a word bank or sentence starters for students who need support. Format clearly for printing. Year group: [add yours].`
+  },
+  {
+    id: 'exit',
+    num: 4,
+    icon: '🎫',
+    title: 'Exit Ticket',
+    toolName: 'Claude (recommended) or ChatGPT',
+    toolType: 'free',
+    toolURL: 'https://claude.ai',
+    toolURL2: 'https://chatgpt.com',
+    toolLabel: 'Open Claude',
+    toolLabel2: 'Open ChatGPT',
+    prompt: (kla) => `Create a short exit ticket for a NSW high school ${kla} class on [add your topic]. Include exactly 5 questions: 2 recall questions, 2 application questions, and 1 reflection prompt ("What is still unclear for you?"). Questions must be answerable in 5–10 minutes. Provide a teacher answer guide below the student section. Format clearly — student section on top, teacher guide separated by a line. Year group: [add yours].`
+  },
+  {
+    id: 'diff',
+    num: 5,
+    icon: '🎯',
+    title: 'Differentiated Versions',
+    toolName: 'Claude (recommended) or ChatGPT',
+    toolType: 'free',
+    toolURL: 'https://claude.ai',
+    toolURL2: 'https://chatgpt.com',
+    toolLabel: 'Open Claude',
+    toolLabel2: 'Open ChatGPT',
+    prompt: (kla) => `Take the worksheet activity for the ${kla} lesson on [add your topic] and produce three clearly labelled, well-formatted versions:\n\n1. SUPPORTED VERSION — simplified language, sentence starters, key vocabulary in a glossary box, broken into small steps\n2. STANDARD VERSION — clear instructions at grade level\n3. EXTENSION VERSION — higher-order thinking, requires evaluation or independent inquiry\n\nLabel each version with a bold heading so they can be printed and distributed separately. Year group: [add yours].`
+  },
+  {
+    id: 'canvas',
+    num: 6,
+    icon: '🖥️',
+    title: 'Canvas LMS Page',
+    toolName: 'Claude (recommended) or ChatGPT',
+    toolType: 'free',
+    toolURL: 'https://claude.ai',
+    toolURL2: 'https://chatgpt.com',
+    toolLabel: 'Open Claude',
+    toolLabel2: 'Open ChatGPT',
+    prompt: (kla) => `Create a complete, ready-to-paste HTML page for a Canvas LMS ${kla} lesson module. Inline CSS only. Include: a banner with navy (#002060) background and gold (#FFD966) lesson title text, a "Learning Intentions" section with 3 bullet points, a "What You Need to Do" section with numbered steps, a video placeholder (grey box, centred "Video goes here"), a "Resources" section with 3 placeholder download links, and a "Need help?" footer with teacher contact placeholder. Clean, professional, readable on a standard laptop screen. Topic: [add your topic]. Year group: [add yours].`
+  }
+];
+
+function buildFullPack(kla) {
+  const container = document.getElementById('toolsContainer');
+  container.innerHTML = '';
+
+  // Header banner
+  container.innerHTML += `
+    <div class="result-header" style="margin-bottom:1rem;">
+      <div class="rh-icon">🎒</div>
+      <div>
+        <h2>Full Lesson Pack — ${escHtmlR(kla)}</h2>
+        <p>Six resources for one complete lesson. Each section uses the best tool for that resource — copy the prompt, open the tool, paste and build.</p>
+      </div>
+    </div>`;
+
+  // Safety banners
+  container.innerHTML += `
+    <div class="banner green" style="margin-bottom:0.75rem;">
+      <span class="banner-icon">🏫</span>
+      <div class="banner-body"><strong>School-approved tools are shown first where available.</strong> Microsoft Copilot keeps your data within the school's M365 system. TASC Spark is promoted by your school.</div>
+    </div>
+    <div class="banner amber" style="margin-bottom:1rem;">
+      <span class="banner-icon">⚠️</span>
+      <div class="banner-body"><strong>Remember:</strong> Never enter student names or personal details into any consumer AI tool. Replace all [placeholders] with your lesson details before pasting.</div>
+    </div>`;
+
+  // Copy all row
+  container.innerHTML += `
+    <div class="pack-copy-all-row">
+      <p>✦ All 6 prompts ready — copy them all at once or one at a time below</p>
+      <button class="pack-copy-all-btn" onclick="packCopyAll('${kla}')">📋 Copy all 6 prompts</button>
+    </div>`;
+
+  // Each section
+  PACK_SECTIONS.forEach((sec, i) => {
+    const prompt = sec.prompt(kla);
+    const promptId = 'packp_' + i;
+    const badgeClass = sec.toolType === 'ms' ? 'ms' : 'free';
+    const badgeIcon  = sec.toolType === 'ms' ? '🪟' : '✦';
+
+    container.innerHTML += `
+      <div class="pack-section" id="packsec_${i}">
+        <div class="pack-section-header" onclick="packToggle(${i})">
+          <div class="pack-section-header-left">
+            <div class="pack-section-num">${sec.num}</div>
+            <div>
+              <div class="pack-section-title">${sec.icon} ${sec.title}</div>
+              <div class="pack-section-tool">${sec.toolName}</div>
+            </div>
+          </div>
+          <span class="pack-chevron" id="packchev_${i}">▼</span>
+        </div>
+        <div class="pack-section-body" id="packbody_${i}">
+          <div class="pack-tool-row">
+            <span class="pack-tool-badge ${badgeClass}">${badgeIcon} ${sec.toolName.split(' (')[0].split(' or ')[0]}</span>
+            <a href="${sec.toolURL}" target="_blank" rel="noopener" class="pack-open-btn">↗ ${sec.toolLabel}</a>
+            ${sec.toolURL2 ? `<a href="${sec.toolURL2}" target="_blank" rel="noopener" class="pack-open-btn" style="background:var(--navy-light);color:var(--navy);" onmouseover="this.style.background='#d4ddf5'" onmouseout="this.style.background='var(--navy-light)'">↗ ${sec.toolLabel2}</a>` : ''}
+          </div>
+          <div class="pack-prompt-label">📋 Copy-paste prompt</div>
+          <div class="pack-prompt-text" id="${promptId}">${escHtmlR(prompt)}</div>
+          <button class="pack-copy-btn" id="packcopy_${i}" onclick="packCopyOne('${promptId}', ${i})">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="5" width="9" height="9" rx="1.5"/><path d="M3 11H2a1 1 0 01-1-1V2a1 1 0 011-1h8a1 1 0 011 1v1"/></svg>
+            Copy prompt
+          </button>
+        </div>
+      </div>`;
+  });
+
+  // Save to workspace banner
+  container.innerHTML += `
+    <div class="pack-save-banner">
+      <div>
+        <p><strong>💡 Want to save this lesson and build more resources from it?</strong> Head to your Lesson Workspace — save your lesson details once and generate any additional resources (assessments, AI media, coding help) with prompts personalised to your exact topic, year group, and class needs.</p>
+        <button class="pack-save-ws-btn" onclick="wsContinueFromResults()">🗂️ Open Lesson Workspace →</button>
+      </div>
+    </div>`;
+
+  // Open all sections by default
+  PACK_SECTIONS.forEach((_, i) => {
+    document.getElementById('packbody_' + i).classList.add('open');
+    document.getElementById('packchev_' + i).classList.add('open');
+  });
+
+  // Render mode toggle bar at top of container
+  packRenderModeBar('toolsContainer', kla, false);
+  notifyHeight();
+}
+
+function packToggle(i) {
+  const body = document.getElementById('packbody_' + i);
+  const chev = document.getElementById('packchev_' + i);
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  chev.classList.toggle('open', !isOpen);
+  notifyHeight();
+}
+
+function packCopyOne(promptId, idx) {
+  const text = document.getElementById(promptId).innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('packcopy_' + idx);
+    if (!btn) return;
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 2000);
+  }).catch(() => {
+    const el = document.getElementById(promptId);
+    if (!el) return;
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    const btn = document.getElementById('packcopy_' + idx);
+    if (btn) { btn.innerHTML = '✓ Selected — Ctrl+C to copy'; setTimeout(() => { btn.innerHTML = 'Copy prompt'; }, 3000); }
+  });
+}
+
+function packCopyAll(kla) {
+  let all = `FULL LESSON PACK — ${kla}\n${'='.repeat(40)}\n\n`;
+  PACK_SECTIONS.forEach((sec, i) => {
+    const el = document.getElementById('packp_' + i);
+    if (el) all += `── ${sec.num}. ${sec.title.toUpperCase()} ──\nBest tool: ${sec.toolName}\n\n${el.innerText}\n\n${'─'.repeat(40)}\n\n`;
+  });
+  navigator.clipboard.writeText(all.trim()).then(() => {
+    const btn = document.querySelector('.pack-copy-all-btn');
+    if (!btn) return;
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✓ All 6 prompts copied!';
+    setTimeout(() => { btn.innerHTML = orig; }, 2500);
+  }).catch(() => {
+    alert('Please copy each prompt individually using the "Copy prompt" buttons below.');
+  });
+}
+
+function escHtmlR(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+/* ═══════════════════════════════════════════════
+   WORKSPACE — FULL PACK TAB
+═══════════════════════════════════════════════ */
+
+function wsShowFullPack(lesson) {
+  // Called from workspace when teacher clicks "Full lesson pack" for a saved lesson
+  const card = document.getElementById('wsPackCard');
+  if (!card) return;
+  card.style.display = 'block';
+
+  const container = document.getElementById('wsPackContainer');
+  container.innerHTML = '';
+
+  const kla = lesson.kla;
+  const ctx = `${lesson.year} ${lesson.kla}. Unit: ${lesson.topic}. Focus: ${lesson.focus || lesson.topic}. Ability: ${lesson.ability}.${lesson.needs && lesson.needs.length ? ' Needs: ' + lesson.needs.join(', ') + '.' : ''}${lesson.otherNeeds ? ' ' + lesson.otherNeeds : ''} Duration: ${lesson.duration}.`;
+
+  container.innerHTML += `
+    <div class="pack-copy-all-row" style="margin-bottom:1rem;">
+      <p>✦ Full pack for: <strong>${escHtmlR(lesson.name)}</strong> — all prompts personalised to your lesson</p>
+      <button class="pack-copy-all-btn" onclick="wsPackCopyAll()">📋 Copy all 6 prompts</button>
+    </div>`;
+
+  PACK_SECTIONS.forEach((sec, i) => {
+    // Build personalised prompt using full lesson context
+    const basePrompt = sec.prompt(kla);
+    const personalised = basePrompt
+      .replace('[add your topic]', lesson.topic)
+      .replace('[add your topic].', lesson.topic + '.')
+      .replace('Topic: [add your topic]', 'Topic: ' + lesson.topic)
+      .replace('[add yours]', lesson.year)
+      .replace('Year group: [add yours]', 'Year group: ' + lesson.year);
+
+    // Add needs context
+    const needsLine = lesson.needs && lesson.needs.length
+      ? `\n\nClass learning needs to account for: ${lesson.needs.join(', ')}.${lesson.otherNeeds ? ' ' + lesson.otherNeeds : ''}`
+      : '';
+    const fullPrompt = personalised + needsLine;
+
+    const promptId = 'wspackp_' + i;
+    const badgeClass = sec.toolType === 'ms' ? 'ms' : 'free';
+    const badgeIcon  = sec.toolType === 'ms' ? '🪟' : '✦';
+
+    container.innerHTML += `
+      <div class="pack-section" id="wspacksec_${i}">
+        <div class="pack-section-header" onclick="wsPackToggle(${i})">
+          <div class="pack-section-header-left">
+            <div class="pack-section-num">${sec.num}</div>
+            <div>
+              <div class="pack-section-title">${sec.icon} ${sec.title}</div>
+              <div class="pack-section-tool">${sec.toolName}</div>
+            </div>
+          </div>
+          <span class="pack-chevron" id="wspackchev_${i}">▼</span>
+        </div>
+        <div class="pack-section-body" id="wspackbody_${i}">
+          <div class="pack-tool-row">
+            <span class="pack-tool-badge ${badgeClass}">${badgeIcon} ${sec.toolName.split(' (')[0].split(' or ')[0]}</span>
+            <a href="${sec.toolURL}" target="_blank" rel="noopener" class="pack-open-btn">↗ ${sec.toolLabel}</a>
+            ${sec.toolURL2 ? `<a href="${sec.toolURL2}" target="_blank" rel="noopener" class="pack-open-btn" style="background:var(--navy-light);color:var(--navy);" onmouseover="this.style.background='#d4ddf5'" onmouseout="this.style.background='var(--navy-light)'">↗ ${sec.toolLabel2}</a>` : ''}
+          </div>
+          <div class="pack-prompt-label">📋 Personalised prompt — all placeholders filled in</div>
+          <div class="pack-prompt-text" id="${promptId}">${escHtmlR(fullPrompt)}</div>
+          <button class="pack-copy-btn" id="wspackcp_${i}" onclick="wsPackCopyOne('${promptId}', ${i})">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="5" width="9" height="9" rx="1.5"/><path d="M3 11H2a1 1 0 01-1-1V2a1 1 0 011-1h8a1 1 0 011 1v1"/></svg>
+            Copy prompt
+          </button>
+        </div>
+      </div>`;
+  });
+
+  // Open all
+  PACK_SECTIONS.forEach((_, i) => {
+    document.getElementById('wspackbody_' + i).classList.add('open');
+    document.getElementById('wspackchev_' + i).classList.add('open');
+  });
+
+  // Render mode toggle bar at top of wsPackContainer
+  packRenderModeBar('wsPackContainer', lesson.kla, true);
+  iframeScrollTo(card);
+  notifyHeight();
+}
+
+function wsPackToggle(i) {
+  const body = document.getElementById('wspackbody_' + i);
+  const chev = document.getElementById('wspackchev_' + i);
+  if (!body) return;
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  chev.classList.toggle('open', !isOpen);
+  notifyHeight();
+}
+
+function wsPackCopyOne(promptId, idx) {
+  const el = document.getElementById(promptId);
+  if (!el) return;
+  navigator.clipboard.writeText(el.innerText).then(() => {
+    const btn = document.getElementById('wspackcp_' + idx);
+    if (!btn) return;
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 2000);
+  }).catch(() => {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+  });
+}
+
+function wsPackCopyAll() {
+  let all = '';
+  PACK_SECTIONS.forEach((sec, i) => {
+    const el = document.getElementById('wspackp_' + i);
+    if (el) all += `── ${sec.num}. ${sec.title.toUpperCase()} ──\nBest tool: ${sec.toolName}\n\n${el.innerText}\n\n${'─'.repeat(40)}\n\n`;
+  });
+  navigator.clipboard.writeText(all.trim()).then(() => {
+    const btn = document.querySelector('#wsPackContainer .pack-copy-all-btn');
+    if (!btn) return;
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✓ All copied!';
+    setTimeout(() => { btn.innerHTML = orig; }, 2500);
+  }).catch(() => {
+    alert('Please copy each prompt individually using the "Copy prompt" buttons.');
+  });
+}
+
+
+
+/* ═══════════════════════════════════════════════
+   SINGLE-TOOL MODE FOR FULL LESSON PACK
+═══════════════════════════════════════════════ */
+
+const SINGLE_TOOLS = [
+  {
+    id: 'claude',
+    icon: '✦',
+    name: 'Claude',
+    note: 'No account needed — recommended',
+    url: 'https://claude.ai',
+    badgeClass: 'rec',
+    badgeLabel: '⭐ Recommended',
+    modeClass: 'active-gold'
+  },
+  {
+    id: 'chatgpt',
+    icon: '💬',
+    name: 'ChatGPT',
+    note: 'Free account — use school email',
+    url: 'https://chatgpt.com',
+    badgeClass: 'free',
+    badgeLabel: '✓ Free',
+    modeClass: 'active'
+  },
+  {
+    id: 'copilot',
+    icon: '🪟',
+    name: 'Microsoft Copilot',
+    note: 'School M365 account required',
+    url: 'https://copilot.microsoft.com',
+    badgeClass: 'school',
+    badgeLabel: '🏫 School approved',
+    modeClass: 'active'
+  }
+];
+
+let packCurrentMode = 'best';   // 'best' | 'claude' | 'chatgpt' | 'copilot'
+let packCurrentKLA  = '';
+let packIsWorkspace = false;    // true when rendered from workspace
+
+function packSetMode(mode, kla, isWorkspace) {
+  packCurrentMode = mode;
+  packCurrentKLA  = kla || packCurrentKLA;
+  packIsWorkspace = !!isWorkspace;
+
+  // Update button states
+  document.querySelectorAll('.pack-mode-btn').forEach(b => {
+    b.classList.remove('active', 'active-gold');
+  });
+  const activeBtn = document.getElementById('packmode_' + mode);
+  if (activeBtn) {
+    const tool = SINGLE_TOOLS.find(t => t.id === mode);
+    activeBtn.classList.add(tool ? tool.modeClass : 'active');
+  }
+
+  if (mode === 'best') {
+    // Hide single-tool master block, show per-section tool rows
+    const masterEl = document.getElementById('packSingleMaster');
+    if (masterEl) masterEl.style.display = 'none';
+    document.querySelectorAll('.pack-tool-row').forEach(r => r.style.display = 'flex');
+    // Restore original per-section prompts
+    packRefreshPrompts(null, kla, isWorkspace);
+  } else {
+    const tool = SINGLE_TOOLS.find(t => t.id === mode);
+    if (!tool) return;
+
+    // Show / update the single master block
+    let masterEl = document.getElementById('packSingleMaster');
+    if (!masterEl) {
+      masterEl = document.createElement('div');
+      masterEl.id = 'packSingleMaster';
+      masterEl.className = 'pack-single-master';
+      // Insert before first pack-section
+      const firstSec = document.querySelector('.pack-section');
+      if (firstSec) firstSec.parentNode.insertBefore(masterEl, firstSec);
+    }
+    masterEl.style.display = 'block';
+    masterEl.innerHTML = `
+      <div class="pack-single-master-title">${tool.icon} Using ${tool.name} for all 6 resources</div>
+      <p>Paste each prompt below into <strong>${tool.name}</strong> as separate messages in the same conversation. Start a new chat first, then paste them one by one — the AI will remember your lesson context as you go.</p>
+      <a href="${tool.url}" target="_blank" rel="noopener" class="pack-single-open-btn">↗ Open ${tool.name}</a>`;
+
+    // Hide per-section tool badges/links — not needed in single-tool mode
+    document.querySelectorAll('.pack-tool-row').forEach(r => r.style.display = 'none');
+
+    // Rewrite prompts for this tool
+    packRefreshPrompts(tool.id, kla, isWorkspace);
+  }
+  notifyHeight();
+}
+
+function packRefreshPrompts(toolId, kla, isWorkspace) {
+  const prefix = isWorkspace ? 'wspackp_' : 'packp_';
+  const lesson = isWorkspace ? wsLessons.find(l => l.id === wsCurrentId) : null;
+
+  PACK_SECTIONS.forEach((sec, i) => {
+    const el = document.getElementById(prefix + i);
+    if (!el) return;
+
+    let prompt = '';
+    if (isWorkspace && lesson) {
+      // Personalised — fill all placeholders
+      const base = sec.prompt(lesson.kla);
+      const needsLine = lesson.needs && lesson.needs.length
+        ? `\n\nClass learning needs: ${lesson.needs.join(', ')}.${lesson.otherNeeds ? ' ' + lesson.otherNeeds : ''}`
+        : '';
+      prompt = base
+        .replace('[add your topic]', lesson.topic)
+        .replace('[add your topic].', lesson.topic + '.')
+        .replace('Topic: [add your topic]', 'Topic: ' + lesson.topic)
+        .replace('[add yours]', lesson.year)
+        .replace('Year group: [add yours]', 'Year group: ' + lesson.year)
+        + needsLine;
+    } else {
+      prompt = sec.prompt(kla || packCurrentKLA);
+    }
+
+    // Add single-tool opener prefix
+    if (toolId) {
+      const toolNames = { claude:'Claude', chatgpt:'ChatGPT', copilot:'Microsoft Copilot' };
+      prompt = `[Paste into ${toolNames[toolId]} — message ${i+1} of 6]\n\n` + prompt;
+    }
+
+    el.textContent = prompt;
+  });
+}
+
+/* Render the mode toggle bar — called inside buildFullPack and wsShowFullPack */
+function packRenderModeBar(containerId, kla, isWorkspace) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  // Insert mode bar before the copy-all row
+  const modeBar = document.createElement('div');
+  modeBar.className = 'pack-mode-bar';
+  modeBar.innerHTML = `
+    <div class="pack-mode-bar-title">
+      🔧 How do you want to build this?
+    </div>
+    <div class="pack-mode-row">
+      <button class="pack-mode-btn" id="packmode_best"
+        onclick="packSetMode('best','${escHtmlR(kla)}',${isWorkspace})">
+        <div class="pack-mode-top" style="display:flex;align-items:center;gap:7px;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:7px;">
+            <span class="pack-mode-icon">🔀</span>
+            <span class="pack-mode-name">Best tool per resource</span>
+          </div>
+          <span class="pack-mode-badge rec">Default</span>
+        </div>
+        <div class="pack-mode-note">Each resource uses the most suitable AI tool</div>
+      </button>
+      ${SINGLE_TOOLS.map(t => `
+      <button class="pack-mode-btn" id="packmode_${t.id}"
+        onclick="packSetMode('${t.id}','${escHtmlR(kla)}',${isWorkspace})">
+        <div class="pack-mode-top" style="display:flex;align-items:center;gap:7px;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:7px;">
+            <span class="pack-mode-icon">${t.icon}</span>
+            <span class="pack-mode-name">${t.name} only</span>
+          </div>
+          <span class="pack-mode-badge ${t.badgeClass}">${t.badgeLabel}</span>
+        </div>
+        <div class="pack-mode-note">${t.note}</div>
+      </button>`).join('')}
+    </div>`;
+
+  // Reset to default mode
+  packCurrentMode = 'best';
+  const firstChild = container.firstChild;
+  container.insertBefore(modeBar, firstChild);
+
+  // Set default active state
+  const defaultBtn = document.getElementById('packmode_best');
+  if (defaultBtn) defaultBtn.classList.add('active');
+}
+
+
+/* ── BUILD RESULTS ── */
+function buildResults() {
+  const kla = state.klaName;
+  const who = state.who;
+  const taskData = tools[state.task];
+  if (!taskData) return;
+
+  document.getElementById('crumb-who').textContent = who === 'teacher' ? '👤 Just me' : '👥 Me & students';
+  document.getElementById('crumb-task').textContent = taskData.icon + ' ' + taskData.title;
+  document.getElementById('crumb-kla').textContent = kla;
+  document.getElementById('resultTitle').textContent = taskData.icon + ' ' + taskData.title + ' — ' + kla;
+  document.getElementById('resultSubtitle').textContent = who === 'teacher'
+    ? 'Tools for teacher use · Prompts personalised to your subject'
+    : 'Student-safe tools · All prompts written without student personal data';
+
+  // inject continue pill
+  setTimeout(wsInjectContinuePill, 100);
+
+  // Full pack route
+  if (state.task === 'full-pack') {
+    buildFullPack(kla);
+    return;
+  }
+
+  document.getElementById('enterpriseBanner').innerHTML = taskData.enterprise.length
+    ? `<div class="banner green" style="margin-bottom:0.75rem;"><span class="banner-icon">🏫</span><div class="banner-body"><strong>School-approved and school-promoted tools are shown first.</strong> Microsoft tools keep your data within the school's M365 system. TASC Spark and Google NotebookLM are promoted by your school. Use these first where available.</div></div>` : '';
+
+  document.getElementById('studentSafetyBanner').innerHTML = who === 'students'
+    ? `<div class="banner amber" style="margin-bottom:0.75rem;"><span class="banner-icon">⚠️</span><div class="banner-body"><strong>Student activity mode.</strong> All prompts below contain no student personal data. Before running a student AI activity, check with your Head Teacher. Students under 18 may need parental consent to create accounts on consumer platforms.</div></div>` : '';
+
+  document.getElementById('consumerWarnBanner').innerHTML =
+    `<div class="banner amber" style="margin-bottom:1rem;"><span class="banner-icon">⚠️</span><div class="banner-body"><strong>For consumer tools:</strong> Never enter student names, IDs, medical or welfare information. Use generic descriptions only — "a Year 10 student", not a name. Assume anything you type may be stored on the tool's servers.</div></div>`;
+
+  const container = document.getElementById('toolsContainer');
+  container.innerHTML = '';
+  const allTools = [...taskData.enterprise, ...taskData.consumer];
+
+  allTools.forEach((tool, idx) => {
+    const prompt = tool.prompt(kla, who);
+    const promptId = 'tp_' + idx;
+
+    const logoIcon = tool.name.includes('ChatGPT') ? '💬'
+      : tool.name.includes('Claude') ? '✦'
+      : tool.name.includes('Canva') ? '🎨'
+      : tool.name.includes('Eleven') ? '🎤'
+      : tool.name.includes('Clipchamp') ? '🎬'
+      : tool.name.includes('Adobe Express') ? '🅰'
+      : tool.name.includes('Firefly') ? '🔥'
+      : tool.name.includes('Designer') ? '🖼'
+      : tool.name.includes('Runway') ? '🎞'
+      : tool.name.includes('Synthesia') ? '🎭'
+      : tool.name.includes('TASC') ? '🏫'
+      : tool.name.includes('NotebookLM') ? '📓'
+      : tool.name.includes('Gemini') ? '✨'
+      : tool.name.includes('Copilot') ? '🪟'
+      : '🔧';
+
+    const isSchoolPromoted = tool.name.includes('TASC') || tool.name.includes('NotebookLM');
+
+    let badges = '';
+    if (tool.type === 'ms' && !isSchoolPromoted) badges += '<span class="badge ms">🏫 School approved</span>';
+    else if (isSchoolPromoted) badges += '<span class="badge ms">🏫 School promoted</span>';
+    else badges += '<span class="badge free">✓ Free</span>';
+    badges += tool.accountRequired
+      ? '<span class="badge account">📧 Account needed</span>'
+      : '<span class="badge no-account">✓ No account needed</span>';
+
+    // Recommended ribbon
+    const recommendedRibbon = tool.recommended
+      ? `<div style="background:#FFD966;color:#002060;font-size:12px;font-weight:600;padding:5px 14px;border-radius:6px;display:inline-flex;align-items:center;gap:5px;margin-bottom:10px;">⭐ Recommended for this task</div>`
+      : '';
+
+    let noticeBanners = '';
+    if (tool.trialNote) {
+      noticeBanners += `<div style="display:flex;align-items:flex-start;gap:8px;background:#EAF7EF;border:1px solid #6FCF97;border-radius:8px;padding:0.7rem 1rem;margin-bottom:6px;font-size:13px;color:#1a6b3a;">
+        <span style="flex-shrink:0;">🟢</span>
+        <span><strong>Free trial available:</strong> ${tool.trialNote}</span>
+      </div>`;
+    }
+    if (tool.paidNote) {
+      noticeBanners += `<div style="display:flex;align-items:flex-start;gap:8px;background:#FFF8E7;border:1px solid #F6C842;border-radius:8px;padding:0.7rem 1rem;margin-bottom:8px;font-size:13px;color:#7d4e00;">
+        <span style="flex-shrink:0;">💳</span>
+        <span><strong>Paid plan required for ongoing use.</strong> ${tool.paidNote}</span>
+      </div>`;
+    }
+
+    // URL map for all tools
+    const toolURLs = {
+      'Microsoft Copilot in Word':        'https://www.microsoft365.com/launch/word',
+      'Microsoft Copilot in PowerPoint':  'https://www.microsoft365.com/launch/powerpoint',
+      'Microsoft Copilot in Edge':        'https://copilot.microsoft.com',
+      'Microsoft Copilot (for HTML code)':'https://copilot.microsoft.com',
+      'Clipchamp (in Microsoft 365)':     'https://clipchamp.com/en/windows-video-editor/',
+      'Microsoft Designer (in M365)':     'https://designer.microsoft.com',
+      'ChatGPT':                          'https://chatgpt.com',
+      'Google Gemini':                    'https://gemini.google.com',
+      'Google NotebookLM (school-promoted)': 'https://notebooklm.google.com',
+      'TASC Spark (school-promoted)':     'https://spark.tasc.nsw.edu.au',
+      'Claude (by Anthropic) — recommended for documents': 'https://claude.ai',
+      'Claude (by Anthropic) — recommended for slide content': 'https://claude.ai',
+      'Claude (by Anthropic) — recommended for HTML': 'https://claude.ai',
+      'Claude (by Anthropic) — recommended for coding': 'https://claude.ai',
+      'Claude (by Anthropic) — recommended': 'https://claude.ai',
+      'Canva (free for educators)':       'https://www.canva.com/education/',
+      'Canva AI — Magic Media':           'https://www.canva.com/education/',
+      'Adobe Firefly':                    'https://firefly.adobe.com',
+      'Adobe Express (free)':             'https://express.adobe.com',
+      'ElevenLabs (AI voiceover)':        'https://elevenlabs.io',
+      'Runway ML':                        'https://runwayml.com',
+      'Synthesia':                        'https://synthesia.io',
+    };
+    const toolURL = tool.link || toolURLs[tool.name] || null;
+    const openLabel = tool.name.includes('TASC') ? 'Open TASC Spark'
+      : tool.name.includes('NotebookLM') ? 'Open NotebookLM'
+      : tool.name.includes('Copilot in Word') ? 'Open Word Online'
+      : tool.name.includes('Copilot in PowerPoint') ? 'Open PowerPoint Online'
+      : tool.name.includes('Copilot in Edge') || tool.name.includes('Copilot (for HTML') ? 'Open Copilot'
+      : tool.name.includes('Clipchamp') ? 'Open Clipchamp'
+      : tool.name.includes('Designer') ? 'Open Designer'
+      : tool.name.includes('ChatGPT') ? 'Open ChatGPT'
+      : tool.name.includes('Gemini') ? 'Open Gemini'
+      : tool.name.includes('Claude') ? 'Open Claude'
+      : tool.name.includes('Canva') ? 'Open Canva'
+      : tool.name.includes('Firefly') ? 'Open Firefly'
+      : tool.name.includes('Adobe Express') ? 'Open Adobe Express'
+      : tool.name.includes('ElevenLabs') ? 'Open ElevenLabs'
+      : tool.name.includes('Runway') ? 'Open Runway'
+      : tool.name.includes('Synthesia') ? 'Open Synthesia'
+      : 'Open tool';
+    const linkBtn = toolURL
+      ? `<a href="${toolURL}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;background:#FFD966;color:#002060;text-decoration:none;border-radius:8px;padding:7px 16px;font-size:13px;font-weight:700;margin-left:8px;transition:background 0.15s;" onmouseover="this.style.background='#f0c832'" onmouseout="this.style.background='#FFD966'">↗ ${openLabel}</a>`
+      : '';
+
+    const desc = tool.desc.replace(/\n/g, '<br>');
+
+    const steps = tool.steps
+      ? `<div class="step-guide"><div class="step-guide-title">📋 Step-by-step guide</div><ol class="steps-list">${tool.steps.map((s,i)=>`<li><div class="step-circle">${i+1}</div><span>${s}</span></li>`).join('')}</ol></div>`
+      : '';
+
+    container.innerHTML += `
+      <div class="tool-card" style="${tool.recommended ? 'border-color: #FFD966; border-width: 2px;' : ''}">
+        ${recommendedRibbon}
+        <div class="tool-card-header">
+          <div class="tool-logo-box ${tool.type === 'ms' ? 'ms' : 'free'}">${logoIcon}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="tool-name-row">
+              <span class="tool-name">${tool.name.replace(' — recommended for documents','').replace(' — recommended for slide content','').replace(' — recommended for HTML','').replace(' — recommended for coding','').replace(' — recommended','')}</span>
+              ${badges}
+            </div>
+            <div class="tool-tagline">${tool.account}</div>
+          </div>
+        </div>
+        <div class="privacy-note">🔒 ${tool.privacyNote}</div>
+        ${noticeBanners}
+        <p class="tool-desc">${desc}</p>
+        <div class="prompt-label">📋 Copy-paste prompt — paste this directly into the tool</div>
+        <div class="prompt-box" id="${promptId}">${prompt}</div>
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:6px;">
+          <button class="copy-btn" id="copybtn_${idx}" onclick="copyPrompt('${promptId}',${idx})">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="5" width="9" height="9" rx="1.5"/><path d="M3 11H2a1 1 0 01-1-1V2a1 1 0 011-1h8a1 1 0 011 1v1"/></svg>
+            Copy prompt
+          </button>
+          ${linkBtn}
+        </div>
+        ${steps}
+      </div>`;
+  });
+}
+
+/* ── COPY PROMPT ── */
+function copyPrompt(promptId, idx) {
+  const text = document.getElementById(promptId).innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copybtn_' + idx);
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 2000);
+  }).catch(() => {
+    // Fallback: select the text so teacher can manually Ctrl+C
+    const range = document.createRange();
+    range.selectNodeContents(document.getElementById(promptId));
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    const btn = document.getElementById('copybtn_' + idx);
+    if (btn) { btn.innerHTML = '✓ Text selected — press Ctrl+C'; setTimeout(() => { btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="5" width="9" height="9" rx="1.5"/><path d="M3 11H2a1 1 0 01-1-1V2a1 1 0 011-1h8a1 1 0 011 1v1"/></svg> Copy prompt'; }, 3000); }
+  });
+}
+
+/* ── POPUP ── */
+function toggleConfirmBtn() {
+  const checked = document.getElementById('disclaimerCheck').checked;
+  document.getElementById('disclaimerConfirmBtn').disabled = !checked;
+}
+function closeDisclaimer() {
+  const overlay = document.getElementById('disclaimerPopup');
+  overlay.style.transition = 'opacity 0.3s ease, max-height 0.4s ease';
+  overlay.style.opacity = '0';
+  overlay.style.overflow = 'hidden';
+  overlay.style.maxHeight = overlay.scrollHeight + 'px';
+  setTimeout(() => {
+    overlay.style.maxHeight = '0';
+    overlay.style.padding = '0';
+    overlay.style.borderBottom = 'none';
+  }, 100);
+  setTimeout(() => {
+    overlay.style.display = 'none';
+    iframeScrollTop();
+  }, 450);
+  try { sessionStorage.setItem('disclaimerAgreed', '1'); } catch(e) {}
+}
+// On load — show popup unless already agreed this session
+window.addEventListener('DOMContentLoaded', () => {
+  wsLoad(); wsRenderSidebar();
+  try {
+    if (sessionStorage.getItem('disclaimerAgreed') === '1') {
+      document.getElementById('disclaimerPopup').style.display = 'none';
+    }
+  } catch(e) {}
+});
+
+/* ── IFRAME-SAFE SCROLL HELPERS ── */
+function iframeScrollTop() {
+  // Works inside Google Sites iframe — scrolls the TOP anchor into view
+  const top = document.getElementById('pageTop');
+  if (top) top.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function iframeScrollTo(el) {
+  if (!el) return;
+  // Small offset so sticky header doesn't cover content
+  setTimeout(() => {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 60);
+}
+
+/* ── IFRAME AUTO-RESIZE (Google Sites) ── */
+let _notifyTimer = null;
+function notifyHeight() {
+  // Throttle to max once per 200ms to avoid excessive postMessage calls
+  if (_notifyTimer) return;
+  _notifyTimer = setTimeout(() => {
+    _notifyTimer = null;
+    const h = document.documentElement.scrollHeight;
+    try { window.parent.postMessage({ type: 'setHeight', height: h }, '*'); } catch(e) {}
+  }, 200);
+}
+if (window.ResizeObserver) {
+  new ResizeObserver(notifyHeight).observe(document.body);
+} else {
+  setInterval(notifyHeight, 1000);
+}
+window.addEventListener('load', notifyHeight);
+
+/* ── SCROLL PROGRESS BAR ── */
+window.addEventListener('scroll', () => {
+  const doc = document.documentElement;
+  const pct = doc.scrollTop / (doc.scrollHeight - doc.clientHeight) * 100;
+  document.getElementById('scrollProg').style.width = Math.min(pct, 100) + '%';
+  notifyHeight();
+});
+
+/* ═══════════════════════════════════════════════════
+   LESSON WORKSPACE — FULL LOGIC
+═══════════════════════════════════════════════════ */
+
+const WS_MAX = 10;
+const WS_KEY = 'aiNavigator_lessons';
+
+/* resource definitions */
+const WS_RESOURCES = [
+  { id:'lesson-plan',   icon:'📋', label:'Lesson plan',          built:false },
+  { id:'worksheet',     icon:'📄', label:'Worksheet',            built:false },
+  { id:'slides',        icon:'📊', label:'Lesson slides',        built:false },
+  { id:'differentiate', icon:'🎯', label:'Differentiation',      built:false },
+  { id:'assessment',    icon:'✅', label:'Assessment task',      built:false },
+  { id:'canvas',        icon:'🖥️', label:'Canvas LMS page',     built:false },
+  { id:'exit-ticket',   icon:'🎫', label:'Exit ticket / quiz',   built:false },
+  { id:'ai-media',      icon:'🎬', label:'AI media prompt',      built:false },
+];
+
+/* state */
+let wsLessons = [];
+let wsCurrentId = null;
+let wsSelectedResources = [];
+
+/* ── STORAGE ── */
+function wsLoad() {
+  try {
+    const raw = localStorage.getItem(WS_KEY);
+    wsLessons = raw ? JSON.parse(raw) : [];
+  } catch(e) { wsLessons = []; }
+}
+function wsSave() {
+  try { localStorage.setItem(WS_KEY, JSON.stringify(wsLessons)); } catch(e) {}
+}
+
+/* ── SIDEBAR RENDER ── */
+function wsRenderSidebar() {
+  const list = document.getElementById('wsLessonList');
+  const empty = document.getElementById('wsEmptyMsg');
+  const count = document.getElementById('wsSavedCount');
+  const fill = document.getElementById('wsCapacityFill');
+  const label = document.getElementById('wsCapacityLabel');
+  const badge = document.querySelector('.ws-badge');
+
+  const n = wsLessons.length;
+  count.textContent = n + ' / ' + WS_MAX;
+  fill.style.width = (n / WS_MAX * 100) + '%';
+  fill.style.background = n >= WS_MAX ? '#E24B4A' : 'var(--navy)';
+  label.textContent = n + ' of ' + WS_MAX + ' lesson slots used' + (n >= WS_MAX ? ' — delete one to add more' : '');
+  if (badge) badge.textContent = n > 0 ? n : '';
+
+  if (n === 0) {
+    empty.style.display = 'block';
+    list.innerHTML = '';
+    list.appendChild(empty);
+    return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = '';
+  wsLessons.forEach(l => {
+    const item = document.createElement('div');
+    item.className = 'ws-lesson-item' + (l.id === wsCurrentId ? ' active' : '');
+    item.innerHTML = `
+      <span class="ws-lesson-item-icon">${l.icon || '📋'}</span>
+      <div style="flex:1;min-width:0;">
+        <div class="ws-lesson-item-title">${escHtml(l.name)}</div>
+        <div class="ws-lesson-item-sub">${escHtml(l.kla)} · ${escHtml(l.year)}</div>
+      </div>
+      <button class="ws-lesson-item-del" title="Delete lesson" onclick="wsDeleteLesson('${l.id}',event)">🗑</button>`;
+    item.addEventListener('click', (e) => {
+      if (e.target.classList.contains('ws-lesson-item-del') || e.target.closest('.ws-lesson-item-del')) return;
+      wsOpenLesson(l.id);
+    });
+    list.appendChild(item);
+  });
+}
+
+/* ── OPEN LESSON ── */
+function wsOpenLesson(id) {
+  const lesson = wsLessons.find(l => l.id === id);
+  if (!lesson) return;
+  wsCurrentId = id;
+
+  // Populate form
+  document.getElementById('wsKLA').value = lesson.kla || '';
+  document.getElementById('wsYear').value = lesson.year || '';
+  document.getElementById('wsTopic').value = lesson.topic || '';
+  document.getElementById('wsFocus').value = lesson.focus || '';
+  document.getElementById('wsAbility').value = lesson.ability || 'mixed ability';
+  document.getElementById('wsDuration').value = lesson.duration || '60 minutes';
+  document.getElementById('wsOtherNeeds').value = lesson.otherNeeds || '';
+  document.getElementById('wsLessonName').value = lesson.name || '';
+
+  // Checkboxes
+  document.querySelectorAll('#wsNeedsGrid input[type=checkbox]').forEach(cb => {
+    cb.checked = lesson.needs && lesson.needs.includes(cb.value);
+    cb.closest('.ws-check-item').classList.toggle('checked', cb.checked);
+  });
+
+  document.getElementById('wsFormTitle').textContent = 'Edit lesson: ' + lesson.name;
+  document.getElementById('wsSaveBtn').textContent = '💾 Update lesson & build resources';
+
+  wsRenderSidebar();
+  wsShowBuilder(lesson);
+
+  // Scroll to top of workspace
+  iframeScrollTop();
+}
+
+/* ── NEW LESSON ── */
+function wsNewLesson() {
+  if (wsLessons.length >= WS_MAX) {
+    alert('You have reached the maximum of 10 saved lessons. Please delete an old lesson before adding a new one.');
+    return;
+  }
+  wsCurrentId = null;
+  document.getElementById('wsFormTitle').textContent = 'New lesson details';
+  document.getElementById('wsSaveBtn').innerHTML = '💾 Save lesson &amp; build resources';
+  // Clear form
+  ['wsKLA','wsYear','wsTopic','wsFocus','wsOtherNeeds','wsLessonName'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('wsAbility').value = 'mixed ability';
+  document.getElementById('wsDuration').value = '60 minutes';
+  document.querySelectorAll('#wsNeedsGrid input[type=checkbox]').forEach(cb => {
+    cb.checked = false;
+    cb.closest('.ws-check-item').classList.remove('checked');
+  });
+  document.getElementById('wsBuilderCard').style.display = 'none';
+  document.getElementById('wsPromptsArea').style.display = 'none';
+  wsRenderSidebar();
+  iframeScrollTo(document.getElementById('wsFormCard'));
+}
+
+/* ── SAVE / UPDATE LESSON ── */
+function wsSaveLesson() {
+  const kla    = document.getElementById('wsKLA').value.trim();
+  const year   = document.getElementById('wsYear').value.trim();
+  const topic  = document.getElementById('wsTopic').value.trim();
+  const focus  = document.getElementById('wsFocus').value.trim();
+  const name   = document.getElementById('wsLessonName').value.trim() || (kla + ' — ' + topic);
+
+  if (!kla || !year || !topic) {
+    alert('Please fill in Subject, Year group, and Topic before saving.');
+    return;
+  }
+
+  const needs = [];
+  document.querySelectorAll('#wsNeedsGrid input[type=checkbox]:checked').forEach(cb => needs.push(cb.value));
+
+  const lesson = {
+    id: wsCurrentId || ('ws_' + Date.now()),
+    name, kla, year, topic, focus,
+    ability: document.getElementById('wsAbility').value,
+    duration: document.getElementById('wsDuration').value,
+    needs,
+    otherNeeds: document.getElementById('wsOtherNeeds').value.trim(),
+    icon: wsKlaIcon(kla),
+    builtResources: [],
+    createdAt: Date.now()
+  };
+
+  if (wsCurrentId) {
+    const idx = wsLessons.findIndex(l => l.id === wsCurrentId);
+    if (idx > -1) {
+      lesson.builtResources = wsLessons[idx].builtResources || [];
+      wsLessons[idx] = lesson;
+    }
+  } else {
+    if (wsLessons.length >= WS_MAX) {
+      alert('Maximum 10 lessons reached. Delete an old lesson to add a new one.');
+      return;
+    }
+    wsLessons.unshift(lesson);
+  }
+
+  wsCurrentId = lesson.id;
+  wsSave();
+  wsRenderSidebar();
+  wsShowBuilder(lesson);
+
+  const btn = document.getElementById('wsSaveBtn');
+  btn.textContent = '✓ Saved!';
+  btn.classList.add('saved');
+  setTimeout(() => {
+    btn.innerHTML = '💾 Update lesson &amp; build resources';
+    btn.classList.remove('saved');
+  }, 2000);
+
+  iframeScrollTo(document.getElementById('wsBuilderCard'));
+}
+
+/* ── DELETE ── */
+function wsDeleteLesson(id, e) {
+  e.stopPropagation();
+  const lesson = wsLessons.find(l => l.id === id);
+  if (!lesson) return;
+  if (!confirm('Delete "' + lesson.name + '"? This cannot be undone.')) return;
+  wsLessons = wsLessons.filter(l => l.id !== id);
+  if (wsCurrentId === id) {
+    wsCurrentId = null;
+    document.getElementById('wsBuilderCard').style.display = 'none';
+    document.getElementById('wsPromptsArea').style.display = 'none';
+    document.getElementById('wsFormTitle').textContent = 'New lesson details';
+  }
+  wsSave();
+  wsRenderSidebar();
+}
+
+/* ── SHOW BUILDER ── */
+function wsShowBuilder(lesson) {
+  const card = document.getElementById('wsBuilderCard');
+  const grid = document.getElementById('wsResourceGrid');
+  card.style.display = 'block';
+  // Also show the full pack card
+  const packCard = document.getElementById('wsPackCard');
+  if (packCard) packCard.style.display = 'block';
+  // Reset pack container when switching lessons
+  const packCont = document.getElementById('wsPackContainer');
+  if (packCont) packCont.innerHTML = '';
+  wsSelectedResources = [];
+  document.getElementById('wsPromptsArea').style.display = 'none';
+  document.getElementById('wsGenerateBtn').disabled = true;
+
+  const sub = `Building for: <strong>${escHtml(lesson.name)}</strong> · ${escHtml(lesson.year)} · ${escHtml(lesson.kla)}`;
+  document.getElementById('wsBuilderSub').innerHTML = sub;
+
+  grid.innerHTML = '';
+  WS_RESOURCES.forEach(r => {
+    const isBuilt = lesson.builtResources && lesson.builtResources.includes(r.id);
+    const btn = document.createElement('button');
+    btn.className = 'ws-resource-btn' + (isBuilt ? ' ws-built' : '');
+    btn.disabled = isBuilt;
+    btn.innerHTML = `
+      <span class="ws-resource-icon">${r.icon}</span>
+      <span class="ws-resource-label">${r.label}</span>
+      ${isBuilt ? '<span class="ws-resource-status">✓ Built</span>' : ''}`;
+    if (!isBuilt) {
+      btn.onclick = () => wsToggleResource(r.id, btn);
+    }
+    grid.appendChild(btn);
+  });
+}
+
+function wsToggleResource(id, btn) {
+  const idx = wsSelectedResources.indexOf(id);
+  if (idx > -1) {
+    wsSelectedResources.splice(idx, 1);
+    btn.classList.remove('ws-selected');
+  } else {
+    wsSelectedResources.push(id);
+    btn.classList.add('ws-selected');
+  }
+  document.getElementById('wsGenerateBtn').disabled = wsSelectedResources.length === 0;
+}
+
+/* ── GENERATE PROMPTS ── */
+function wsGeneratePrompts() {
+  const lesson = wsLessons.find(l => l.id === wsCurrentId);
+  if (!lesson) { alert('Please save your lesson details first before generating prompts.'); return; }
+  if (wsSelectedResources.length === 0) { alert('Please select at least one resource to build.'); return; }
+
+  const area = document.getElementById('wsPromptsArea');
+  const container = document.getElementById('wsPromptsContainer');
+  container.innerHTML = '';
+  area.style.display = 'block';
+
+  document.getElementById('wsPromptsTitle').textContent =
+    'Personalised prompts for: ' + lesson.name;
+
+  wsSelectedResources.forEach((resId, i) => {
+    const res = WS_RESOURCES.find(r => r.id === resId);
+    if (!res) return;
+    const prompt = wsBuildPrompt(resId, lesson);
+    const blockId = 'wsp_' + i;
+
+    container.innerHTML += `
+      <div class="ws-prompt-block">
+        <div class="ws-prompt-block-header">
+          <div class="ws-prompt-block-label">
+            ${res.icon} ${res.label}
+            <span class="ws-prompt-tool-badge">— Paste into Claude (recommended) or ChatGPT</span>
+          </div>
+        </div>
+        <div class="ws-prompt-text" id="${blockId}">${escHtml(prompt)}</div>
+        <button class="ws-copy-one-btn" id="wscopy_${i}" onclick="wsCopyOne('${blockId}', ${i})">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="5" width="9" height="9" rx="1.5"/><path d="M3 11H2a1 1 0 01-1-1V2a1 1 0 011-1h8a1 1 0 011 1v1"/></svg>
+          Copy prompt
+        </button>
+      </div>`;
+  });
+
+  // Mark as built
+  wsSelectedResources.forEach(id => {
+    const lesson = wsLessons.find(l => l.id === wsCurrentId);
+    if (lesson && !lesson.builtResources.includes(id)) {
+      lesson.builtResources.push(id);
+    }
+  });
+  wsSave();
+
+  iframeScrollTo(area);
+}
+
+/* ── PROMPT BUILDER ── */
+function wsBuildPrompt(resId, l) {
+  const needsList = l.needs && l.needs.length > 0
+    ? ' The class includes ' + l.needs.join(', ') + '.'
+    : '';
+  const other = l.otherNeeds ? ' Additional context: ' + l.otherNeeds + '.' : '';
+  const ctx = `${l.year} ${l.kla} class. Unit: ${l.topic}. Lesson focus: ${l.focus || l.topic}. Class ability: ${l.ability}.${needsList}${other} Lesson duration: ${l.duration}.`;
+
+  switch(resId) {
+    case 'lesson-plan':
+      return `I am a NSW high school ${l.kla} teacher. Please create a detailed, well-structured lesson plan for the following class:\n\n${ctx}\n\nInclude: lesson title, NSW NESA syllabus outcome(s) for Stage ${l.year >= 'Year 11' ? '6' : '5'}, learning intentions (as "I can" statements), success criteria, a warm-up activity (5–10 mins), two or three main learning activities with teacher instructions and student tasks clearly separated, a consolidation or exit task, and a resources list. Account for the range of learning needs in this class by including brief differentiation notes for each activity. Use clear, plain language.`;
+
+    case 'worksheet':
+      return `Create a well-formatted classroom worksheet for the following class:\n\n${ctx}\n\nInclude: a lesson title and brief student introduction, 4 short-answer questions that progress from knowledge recall to application, one extended response question, and one optional extension task. Where relevant, include scaffolding supports for students who need them (e.g. sentence starters, word banks). Write in clear language appropriate for ${l.year} students. Format with distinct sections and headings so it is ready to print.`;
+
+    case 'slides':
+      return `Write the complete content for a PowerPoint presentation for the following class:\n\n${ctx}\n\nFor each slide provide the slide title, 4–5 concise bullet points, and brief speaker notes. Include: a title slide, a learning intentions slide, 5 content slides covering the key concepts, one interactive activity or discussion slide, and a summary/exit slide. Keep bullet points short. Where relevant, note any slide where additional visual support or simplified text would help students with learning needs in this class.`;
+
+    case 'differentiate':
+      return `I need three differentiated versions of a learning activity for the following class:\n\n${ctx}\n\nCreate:\n1. SUPPORTED VERSION — simplified language, sentence starters, key vocabulary in a glossary box, broken into small steps${needsList ? ', with specific adjustments for ' + (l.needs||[]).join(' and ') : ''}\n2. STANDARD VERSION — clear instructions, appropriate challenge for ${l.year}\n3. EXTENSION VERSION — higher-order thinking, requires evaluation or independent inquiry, suitable for gifted students\n\nLabel each version clearly with a bold heading. Do not reference individual students by name or diagnosis.`;
+
+    case 'assessment':
+      return `Draft a complete assessment task notification for the following class:\n\n${ctx}\n\nFormat it professionally with clear section headings. Include: assessment title, year group, task weighting (leave as a placeholder), a 2–3 paragraph task description, the NSW NESA ${l.kla} Stage ${l.year >= 'Year 11' ? '6' : '5'} outcome(s) being assessed, a marking criteria table (two columns: criteria | marks), submission requirements, and a submission date placeholder. Note any reasonable adjustments that may be needed for students with learning needs in this class. Do not include any student names or personal information.`;
+
+    case 'canvas':
+      return `Write a complete, ready-to-paste HTML page for a Canvas LMS module for the following class:\n\n${ctx}\n\nUse inline CSS only. Include: a banner with navy (#002060) background and gold (#FFD966) lesson title text, a "Learning Intentions" section with 3 clearly formatted bullet points, a "What You Need to Do" section with numbered steps written for ${l.year} students, a video placeholder (grey box with centred "Video goes here"), a "Resources" section with 3 placeholder download links, and a "Need help?" footer with teacher contact placeholder. Make it clean and readable. Write all student-facing instructions in direct, clear language appropriate for ${l.year}. No student names.`;
+
+    case 'exit-ticket':
+      return `Create a short exit ticket or end-of-lesson quiz for the following class:\n\n${ctx}\n\nInclude 5 questions that check whether students have met the learning intentions for this lesson. Use a mix of: 2 recall questions, 2 application questions, and 1 reflection prompt ("What is still unclear for you?"). Questions should be answerable in 5–10 minutes. Provide a suggested answer guide for the teacher. Format clearly for printing or digital use.`;
+
+    case 'ai-media':
+      return `Write a detailed prompt I can use in an AI media tool (such as Canva Magic Media, Adobe Firefly, Runway ML, or ElevenLabs) to create a supporting visual or audio resource for the following lesson:\n\n${ctx}\n\nFor each of the following, write one specific, detailed prompt:\n1. IMAGE PROMPT (for Canva Magic Media or Adobe Firefly): describe the exact visual, style, colours, and subject\n2. VIDEO PROMPT (for Runway ML): describe the scene, animation, and duration\n3. VOICEOVER SCRIPT (for ElevenLabs): a 60-second spoken explanation of the key concept, written as natural speech for ${l.year} students\n\nKeep all content school-appropriate and educational.`;
+
+    default:
+      return `Create a ${resId.replace(/-/g,' ')} for the following class:\n\n${ctx}\n\nMake it appropriate for ${l.year} students, account for the range of learning needs in this class, and format it clearly for classroom use.`;
+  }
+}
+
+/* ── COPY ── */
+function wsCopyOne(blockId, idx) {
+  const text = document.getElementById(blockId).innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('wscopy_' + idx);
+    if (!btn) return;
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 2000);
+  }).catch(() => {
+    const el = document.getElementById(blockId);
+    if (!el) return;
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    const btn = document.getElementById('wscopy_' + idx);
+    if (btn) { btn.innerHTML = '✓ Selected — press Ctrl+C'; setTimeout(() => { btn.innerHTML = btn.innerHTML.replace('✓ Selected — press Ctrl+C','Copy prompt'); }, 3000); }
+  });
+}
+
+function wsCopyAll() {
+  const blocks = document.querySelectorAll('.ws-prompt-text');
+  const labels = document.querySelectorAll('.ws-prompt-block-label');
+  let all = '';
+  blocks.forEach((b, i) => {
+    const label = labels[i] ? labels[i].innerText.split('—')[0].trim() : ('Prompt ' + (i+1));
+    all += '── ' + label + ' ──\n' + b.innerText + '\n\n';
+  });
+  navigator.clipboard.writeText(all.trim()).then(() => {
+    const btn = document.querySelector('.ws-copy-all-btn');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✓ All copied!';
+    setTimeout(() => { btn.innerHTML = orig; }, 2500);
+  });
+}
+
+/* ── HELPERS ── */
+function wsKlaIcon(kla) {
+  if (kla.includes('English')) return '📖';
+  if (kla.includes('Math')) return '📐';
+  if (kla.includes('Science')) return '🔬';
+  if (kla.includes('HSIE')) return '🌏';
+  if (kla.includes('Tech') || kla.includes('TAS')) return '💻';
+  if (kla.includes('PDHPE')) return '🏃';
+  if (kla.includes('Arts')) return '🎨';
+  if (kla.includes('Lang')) return '🗣️';
+  return '📋';
+}
+function escHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── CHECKBOX STYLING ── */
+document.addEventListener('change', e => {
+  if (e.target.type === 'checkbox' && e.target.closest('#wsNeedsGrid')) {
+    e.target.closest('.ws-check-item').classList.toggle('checked', e.target.checked);
+  }
+});
+
+/* ── INIT ON WORKSPACE PAGE SHOW ── */
+function wsInit() {
+  wsLoad();
+  wsRenderSidebar();
+  // If there's an active lesson context from the results page, pre-populate
+  if (window._wsPrefill) {
+    document.getElementById('wsKLA').value = window._wsPrefill.kla || '';
+    document.getElementById('wsYear').value = '';
+    document.getElementById('wsTopic').value = '';
+    document.getElementById('wsLessonName').value = '';
+    window._wsPrefill = null;
+  }
+}
+
+/* ── "CONTINUE BUILDING" pill injected on results page ── */
+function wsInjectContinuePill() {
+  const existing = document.getElementById('wsContinuePill');
+  if (existing) existing.remove();
+
+  const kla = state.klaName;
+  const task = state.task;
+  if (!kla || !task) return;
+
+  const taskLabels = {
+    'lesson-plan':'Lesson plan','lesson-slides':'Lesson slides',
+    'classroom-resource':'Classroom resource','assessment':'Assessment task',
+    'differentiate':'Differentiation','canvas':'Canvas LMS page',
+    'ai-media':'AI media','coding':'Coding help'
+  };
+
+  const pill = document.createElement('div');
+  pill.id = 'wsContinuePill';
+  pill.className = 'ws-context-pill';
+  pill.innerHTML = `
+    <p>✦ <strong>Built ${taskLabels[task] || task} for ${kla}?</strong> Head to your Lesson Workspace to generate matching worksheets, differentiation, Canvas pages and more — all personalised to your exact lesson.</p>
+    <button class="ws-continue-btn" onclick="wsContinueFromResults()">Open Lesson Workspace →</button>`;
+
+  const restartRow = document.querySelector('#panelResults .restart-row');
+  if (restartRow) restartRow.insertAdjacentElement('beforebegin', pill);
+}
+
+function wsContinueFromResults() {
+  window._wsPrefill = { kla: state.klaName };
+  showPage('workspace');
+  wsInit();
+}
+
+</script>
+</body>
+</html>
